@@ -1,10 +1,25 @@
 import { useState } from "react";
-import { disclaimer, finalStatement, keyMessage } from "../data/config";
+import { disclaimer, finalStatement, ideologyPresets, keyMessage } from "../data/config";
 import { generatePoliticalCopy } from "../lib/simulation";
 
-export function ResultScreen({ role, segment, summary, result, onRestart, onBack }) {
+export function ResultScreen({
+  role,
+  segment,
+  summary,
+  result,
+  preset,
+  presetSource,
+  onRestart,
+  onBack
+}) {
   const [copied, setCopied] = useState(false);
-  const copyText = generatePoliticalCopy({ role, result });
+  const presetLabel =
+    preset === "custom"
+      ? presetSource
+        ? `Eigene Variante auf Basis von ${presetSource}`
+        : "Eigene Einstellung"
+      : ideologyPresets.find((entry) => entry.id === preset)?.label;
+  const copyText = generatePoliticalCopy({ role, result, presetId: preset });
 
   const handleCopy = async () => {
     try {
@@ -49,6 +64,7 @@ export function ResultScreen({ role, segment, summary, result, onRestart, onBack
           <p className="mt-3 text-lg text-mist">
             {role.icon} {role.label}
             {segment ? ` · ${segment.label}` : ""}
+            {presetLabel ? ` · ${presetLabel}` : ""}
           </p>
           <p className="mt-4 text-2xl leading-9 text-mist">{summary}</p>
           <p className="mt-4 text-sm leading-7 text-mist/76">{result.roleResultFrame}</p>

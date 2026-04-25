@@ -142,7 +142,7 @@ export function SimulationScreen({
         {keyMessage}
       </div>
 
-      <div className="grid gap-6 2xl:grid-cols-[minmax(360px,0.9fr)_minmax(0,1.1fr)]">
+      <div className="space-y-6">
         <div className="space-y-5 rounded-[34px] border border-white/10 bg-black/20 p-4 sm:p-6">
           <div className="rounded-[24px] border border-gold/20 bg-gold/10 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">Wirkungskontext</p>
@@ -207,7 +207,7 @@ export function SimulationScreen({
           </div>
 
           {roleView ? (
-            <div className={`grid gap-4 ${roleView.relieves ? "md:grid-cols-2" : "xl:grid-cols-2"}`}>
+            <div className="space-y-4">
               <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
                 <p className="text-sm font-semibold text-mist">Bedarf</p>
                 <p className="mt-2 text-sm leading-7 text-mist/72">{roleView.need}</p>
@@ -233,7 +233,7 @@ export function SimulationScreen({
             </div>
           ) : null}
 
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="space-y-4">
             <div className="rounded-[24px] border border-emerald-300/20 bg-emerald-300/10 p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-300">
                 Mit Infrastruktur
@@ -265,7 +265,7 @@ export function SimulationScreen({
             <MetricCard label="Gesellschaftlicher Schaden" value={result.outputs.damage} tone="danger" large />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2">
             <MetricCard label="Sicherheit" value={result.outputs.safety} tone="good" />
             <MetricCard label="Sichtbarkeit" value={result.outputs.visibility} tone="good" />
             <MetricCard
@@ -284,7 +284,7 @@ export function SimulationScreen({
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
               Dominante politische Scores
             </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 space-y-4">
               {dominantMetricExplanations.map((item) => (
                 <div key={item.key} className="rounded-[22px] border border-white/10 bg-black/25 p-4">
                   <p className="text-sm font-semibold text-mist">{item.label}</p>
@@ -340,7 +340,7 @@ export function SimulationScreen({
               {coercionLayer.title}
             </p>
             <p className="mt-3 text-sm leading-7 text-mist/84">{coercionLayer.intro}</p>
-            <div className="mt-4 grid gap-4 2xl:grid-cols-2">
+            <div className="mt-4 space-y-4">
               <BulletList title="Realität" items={coercionLayer.reality} />
               <BulletList title="Warum es schwer sichtbar ist" items={coercionLayer.hardToSee} />
               <BulletList title="Was hilft" items={coercionLayer.helps} tone="good" />
@@ -381,7 +381,7 @@ export function SimulationScreen({
                 </div>
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="space-y-4">
                 <BulletList title="Wirkung für die Person" items={segment.personEffect} />
                 <BulletList title="Gesellschaftliche Funktion" items={segment.socialFunction} />
                 <BulletList title="Was passiert bei Wegfall" items={segment.absence} tone="danger" />
