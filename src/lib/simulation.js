@@ -84,10 +84,111 @@ function getCompass(outputs) {
   return { items, verdict };
 }
 
-function getRecommendation(result) {
-  const { outputs, compass } = result;
+export function getPolicyCheck(outputs) {
+  const items = [
+    {
+      id: "visibility",
+      question: "Erhöht sie Sichtbarkeit?",
+      positive: outputs.visibility >= 55,
+      value: outputs.visibility
+    },
+    {
+      id: "trust",
+      question: "Erhöht sie Vertrauen?",
+      positive: outputs.trust >= 55,
+      value: outputs.trust
+    },
+    {
+      id: "anonymity",
+      question: "Schützt sie Anonymität?",
+      positive: outputs.anonymity >= 55,
+      value: outputs.anonymity
+    },
+    {
+      id: "access",
+      question: "Verbessert sie Zugang zu Hilfe?",
+      positive: outputs.access >= 55,
+      value: outputs.access
+    },
+    {
+      id: "workplaces",
+      question: "Erhält sie sichere Arbeitsorte?",
+      positive: outputs.infrastructure >= 55 && outputs.safety >= 50,
+      value: Math.round((outputs.infrastructure + outputs.safety) / 2)
+    },
+    {
+      id: "coercion",
+      question: "Macht sie Ausbeutung bekämpfbarer?",
+      positive: outputs.coercionControl >= 58,
+      value: outputs.coercionControl
+    },
+    {
+      id: "displacement",
+      question: "Verhindert sie Verlagerung?",
+      positive: outputs.displacement <= 44,
+      value: 100 - outputs.displacement
+    }
+  ];
 
-  if (compass.verdict === "Wirksame Schutzpolitik") {
+  const positives = items.filter((item) => item.positive).length;
+  let verdict = "Gemischte Schutzwirkung";
+
+  if (positives >= 5) {
+    verdict = "Wirksame Schutzpolitik";
+  } else if (positives <= 2) {
+    verdict = "Hohe Nebenwirkungen / geringe Wirksamkeit";
+  }
+
+  return { items, positives, verdict };
+}
+
+export function getGoalFit(goalId, outputs) {
+  const goals = {
+    exploitation: {
+      label: "Ausbeutung senken",
+      score: Math.round(
+        outputs.coercionControl * 0.35 +
+          outputs.access * 0.2 +
+          outputs.infrastructure * 0.15 +
+          outputs.visibility * 0.1 +
+          (100 - outputs.exploitationRisk) * 0.2
+      ),
+      text:
+        "Dieses Ziel profitiert vor allem von Sichtbarkeit, Zugang, Schutzinfrastruktur und gezielter Bekämpfbarkeit von Zwang."
+    },
+    safety: {
+      label: "Sicherheit erhöhen",
+      score: Math.round(
+        outputs.safety * 0.32 +
+          outputs.infrastructure * 0.24 +
+          outputs.visibility * 0.14 +
+          outputs.selfDetermination * 0.16 +
+          outputs.access * 0.14
+      ),
+      text:
+        "Dieses Ziel profitiert von sicheren Arbeitsorten, funktionierender Infrastruktur, Standards und verlässlichem Zugang."
+    },
+    underground: {
+      label: "Untergrund vermeiden",
+      score: Math.round(
+        outputs.visibility * 0.24 +
+          outputs.trust * 0.18 +
+          outputs.access * 0.18 +
+          outputs.anonymity * 0.16 +
+          (100 - outputs.displacement) * 0.24
+      ),
+      text:
+        "Dieses Ziel profitiert von Anonymität, Vertrauen und sichtbaren Strukturen, die Bedarf nicht in Graubereiche verdrängen."
+    }
+  };
+
+  return goals[goalId] ?? goals.exploitation;
+}
+
+function getRecommendation(result) {
+  const { outputs, compass, policyCheck, goalFit } = result;
+
+  if (policyCheck.verdict === "Wirksame Schutzpolitik") {
     return "Die Kombination stärkt Sichtbarkeit, Zugang, Anonymität und gezielte Ausbeutungsbekämpfung zugleich. Das ist politisch die robusteste Konstellation.";
   }
 
@@ -103,10 +204,10 @@ function getRecommendation(result) {
     return "Gezielte Durchsetzung gegen Ausbeutung braucht mehr Schutzinfrastruktur, mehr Anonymität und mehr Zugang, sonst bleiben Betroffene schwer erreichbar.";
   }
 
-  return "Die Konstellation ist nicht klar schädlich, aber politisch noch nicht robust. Entscheidend wäre, Verlagerungsrisiko weiter zu senken und Zwang besser erkennbar zu machen.";
+  return `Die Konstellation ist politisch noch nicht robust. Für das gewählte Ziel "${goalFit.label}" müsste vor allem Verlagerung sinken und der Zugang zu Schutzstrukturen stabiler werden.`;
 }
 
-export function calculateScenario({ role, segment, sliders }) {
+export function calculateScenario({ role, segment, sliders, policyGoal = "exploitation" }) {
   const profile = segment ? segmentMap[segment] : null;
   const weights = getBaseWeights(profile);
 
@@ -254,6 +355,8 @@ export function calculateScenario({ role, segment, sliders }) {
   };
 
   const compass = getCompass(outputs);
+  const policyCheck = getPolicyCheck(outputs);
+  const goalFit = getGoalFit(policyGoal, outputs);
 
   const chain = [
     {
@@ -302,7 +405,9 @@ export function calculateScenario({ role, segment, sliders }) {
     chain,
     interpretation: roleEffects[role],
     roleResultFrame: roleResultFrames[role],
-    compass
+    compass,
+    policyCheck,
+    goalFit
   };
 
   return {
@@ -346,9 +451,9 @@ export function getPerspectiveShift({ role, result }) {
 }
 
 export function getResultSummary({ result }) {
-  const { compass, outputs } = result;
+  const { compass, outputs, policyCheck } = result;
 
-  if (compass.verdict === "Wirksame Schutzpolitik") {
+  if (policyCheck.verdict === "Wirksame Schutzpolitik") {
     return "Die aktuelle Kombination erhöht Sichtbarkeit, Schutz und Bekämpfbarkeit von Zwang, ohne selbstbestimmte Arbeit stark in den Untergrund zu drängen.";
   }
 
@@ -376,13 +481,13 @@ export function generatePoliticalCopy({ role, result, presetId = "custom" }) {
     return "Im repressiven Szenario steigt zwar der Verbotsdruck, aber Sichtbarkeit und Vertrauen sinken. Dadurch wächst das Risiko, dass Ausbeutung schwerer erkennbar wird.";
   }
 
-  const { outputs, compass } = result;
+  const { outputs, policyCheck } = result;
 
-  if (compass.verdict === "Wirksame Schutzpolitik") {
+  if (policyCheck.verdict === "Wirksame Schutzpolitik") {
     return "Dieses Szenario erhöht Sichtbarkeit, Schutz und Bekämpfbarkeit von Zwang, ohne selbstbestimmte Sexarbeit stark in den Untergrund zu drängen.";
   }
 
-  if (compass.verdict === "Symbolische Härte mit Verlagerungsrisiko") {
+  if (policyCheck.positives <= 2) {
     return "Dieses Szenario wirkt hart, senkt aber Sichtbarkeit und Zugang. Dadurch steigt das Risiko, dass Ausbeutung schwerer erkennbar wird.";
   }
 

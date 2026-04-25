@@ -14,6 +14,7 @@ import {
   keyMessage,
   protectionLawChecklist
 } from "../data/config";
+import { DebugPanel } from "./DebugPanel";
 
 const dominantMetricExplanations = [
   {
@@ -119,10 +120,15 @@ export function SimulationScreen({
   role,
   segment,
   result,
+  policyGoal,
+  preset,
+  sliders,
   onBack,
   onNext,
   perspectiveShift,
-  segmentComparisons
+  segmentComparisons,
+  debug,
+  summary
 }) {
   const dominantOutputData = [
     { key: "Infrastrukturwirkung", value: result.outputs.infrastructure, fill: "#7de2c3" },
@@ -179,6 +185,34 @@ export function SimulationScreen({
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+              Policy-Check
+            </p>
+            <p className="mt-3 text-sm leading-7 text-mist/72">
+              Dieses Modell gilt nur dann als wirksame Schutzpolitik, wenn mehrere
+              Schutzbedingungen gleichzeitig tragen.
+            </p>
+            <div className="mt-4 space-y-3">
+              {result.policyCheck.items.map((item) => (
+                <div
+                  key={item.id}
+                  className={`rounded-[18px] border p-4 ${
+                    item.positive
+                      ? "border-emerald-300/20 bg-emerald-300/10"
+                      : "border-rust/20 bg-rust/10"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-mist">{item.question}</p>
+                  <p className="mt-2 text-sm text-mist/72">{item.positive ? "Positiv" : "Negativ"}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-sm font-semibold text-mist">
+              Policy-Check: {result.policyCheck.verdict}
+            </p>
           </div>
 
           <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
@@ -464,6 +498,23 @@ export function SimulationScreen({
               ))}
             </div>
           </div>
+
+          {debug ? (
+            <DebugPanel
+              title="Review / Debug"
+              items={[
+                { label: "Aktive Rolle", value: role.id },
+                { label: "Aktives Segment", value: segment?.id ?? "none" },
+                { label: "Aktives Preset", value: preset?.id ?? "custom" },
+                { label: "Aktives Ziel", value: policyGoal?.id ?? "exploitation" },
+                { label: "Sliderwerte", value: sliders },
+                { label: "Berechnete Scores", value: result.outputs },
+                { label: "Wirkungslogik", value: result.chain },
+                { label: "Policy-Check", value: result.policyCheck },
+                { label: "Generiertes Fazit", value: summary }
+              ]}
+            />
+          ) : null}
         </div>
       </div>
 

@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { disclaimer, finalStatement, ideologyPresets, keyMessage } from "../data/config";
+import { disclaimer, finalStatement, keyMessage } from "../data/config";
+import { ideologyPresets } from "../data/presets";
 import { generatePoliticalCopy } from "../lib/simulation";
+import { DebugPanel } from "./DebugPanel";
 
 export function ResultScreen({
   role,
@@ -9,6 +11,9 @@ export function ResultScreen({
   result,
   preset,
   presetSource,
+  policyGoal,
+  sliders,
+  debug,
   onRestart,
   onBack
 }) {
@@ -69,6 +74,11 @@ export function ResultScreen({
           <p className="mt-4 text-2xl leading-9 text-mist">{summary}</p>
           <p className="mt-4 text-sm leading-7 text-mist/76">{result.roleResultFrame}</p>
           <p className="mt-4 text-sm leading-7 text-mist/84">{result.recommendation}</p>
+          {policyGoal ? (
+            <p className="mt-4 text-sm leading-7 text-mist/72">
+              Politisches Ziel: {policyGoal.label}. Ziel-Fit: {result.goalFit.score}
+            </p>
+          ) : null}
           <div className="mt-5 flex flex-wrap gap-3">
             <button
               type="button"
@@ -100,6 +110,21 @@ export function ResultScreen({
         <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 text-base leading-8 text-mist/84">
           {finalStatement}
         </div>
+        {debug ? (
+          <DebugPanel
+            title="Review / Debug"
+            items={[
+              { label: "Aktive Rolle", value: role.id },
+              { label: "Aktives Segment", value: segment?.id ?? "none" },
+              { label: "Aktives Preset", value: preset },
+              { label: "Aktives Ziel", value: policyGoal?.id ?? "exploitation" },
+              { label: "Sliderwerte", value: sliders },
+              { label: "Berechnete Scores", value: result.outputs },
+              { label: "Policy-Check", value: result.policyCheck },
+              { label: "Generiertes Fazit", value: copyText }
+            ]}
+          />
+        ) : null}
         <div className="flex justify-center gap-3">
           <button
             type="button"

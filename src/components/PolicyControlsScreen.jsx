@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { comparisonClosing, sagSourceBox, sliderConfig } from "../data/config";
+import { DebugPanel } from "./DebugPanel";
 
 function Slider({ config, value, onChange }) {
   return (
@@ -43,6 +44,9 @@ export function PolicyControlsScreen({
   role,
   segment,
   sliders,
+  policyGoal,
+  policyGoals,
+  onPolicyGoalChange,
   preset,
   presets,
   onPresetChange,
@@ -52,7 +56,8 @@ export function PolicyControlsScreen({
   onNext,
   preview,
   comparisonModels,
-  segmentComparisons
+  segmentComparisons,
+  debug
 }) {
   const [showComparison, setShowComparison] = useState(false);
   const activePreset = presets.find((entry) => entry.id === preset);
@@ -74,6 +79,33 @@ export function PolicyControlsScreen({
           {segment ? (
             <p className="mt-3 text-sm leading-7 text-mist/72">{segment.summary}</p>
           ) : null}
+        </div>
+
+        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+            Politisches Ziel wählen
+          </p>
+          <p className="mt-3 text-sm leading-7 text-mist/72">
+            Das Cockpit bewertet nicht nur abstrakt, sondern auch danach, welches politische
+            Ziel du priorisierst.
+          </p>
+          <div className="mt-4 grid gap-3 xl:grid-cols-3">
+            {policyGoals.map((goal) => (
+              <button
+                key={goal.id}
+                type="button"
+                onClick={() => onPolicyGoalChange(goal.id)}
+                className={`rounded-[18px] border p-4 text-left transition ${
+                  policyGoal === goal.id
+                    ? "border-gold bg-gold/10"
+                    : "border-white/10 bg-black/25 hover:border-white/20"
+                }`}
+              >
+                <p className="font-semibold text-mist">{goal.label}</p>
+                <p className="mt-2 text-sm leading-6 text-mist/66">{goal.description}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
@@ -175,6 +207,40 @@ export function PolicyControlsScreen({
             Rahmenbedingungen und prüfe im nächsten Schritt, was mit Sichtbarkeit, Zugang,
             Zwangsbekämpfung und gesellschaftlichem Schaden passiert.
           </p>
+          <div className="mt-5 rounded-[18px] border border-white/10 bg-black/25 p-4">
+            <p className="text-sm font-semibold text-mist">
+              Ziel-Fit: {preview.goalFit.label} ({preview.goalFit.score})
+            </p>
+            <p className="mt-2 text-sm leading-7 text-mist/72">{preview.goalFit.text}</p>
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+            Policy-Check
+          </p>
+          <p className="mt-3 text-sm leading-7 text-mist/72">
+            Nur wenn mehrere dieser Prüfsteine gleichzeitig positiv sind, bewertet das
+            Cockpit ein Modell als wirksame Schutzpolitik.
+          </p>
+          <div className="mt-4 space-y-3">
+            {preview.policyCheck.items.map((item) => (
+              <div
+                key={item.id}
+                className={`rounded-[18px] border p-4 ${
+                  item.positive
+                    ? "border-emerald-300/20 bg-emerald-300/10"
+                    : "border-rust/20 bg-rust/10"
+                }`}
+              >
+                <p className="text-sm font-semibold text-mist">{item.question}</p>
+                <p className="mt-2 text-sm text-mist/72">{item.positive ? "Ja" : "Nein"}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm font-semibold text-mist">
+            Ergebnis: {preview.policyCheck.verdict}
+          </p>
         </div>
 
         {!segment && ["politics", "journalism", "society"].includes(role.id) ? (
@@ -271,6 +337,23 @@ export function PolicyControlsScreen({
             <p className="mt-4 text-sm leading-7 text-mist/84">{comparisonClosing}</p>
           </div>
         </div>
+      ) : null}
+
+      {debug ? (
+        <DebugPanel
+          title="Review / Debug"
+          items={[
+            { label: "Aktive Rolle", value: role.id },
+            { label: "Aktives Segment", value: segment?.id ?? "none" },
+            { label: "Aktives Preset", value: preset },
+            { label: "Aktives Ziel", value: policyGoal },
+            { label: "Sliderwerte", value: sliders },
+            { label: "Berechnete Scores", value: preview.outputs },
+            { label: "Wirkungslogik", value: preview.chain },
+            { label: "Policy-Check", value: preview.policyCheck },
+            { label: "Generiertes Fazit", value: preview.recommendation }
+          ]}
+        />
       ) : null}
 
       <div className="flex justify-center gap-3">

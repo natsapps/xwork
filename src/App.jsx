@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  defaultSliders,
-  ideologyPresets
+  defaultSliders
 } from "./data/config";
+import { ideologyPresets, politicalGoals } from "./data/presets";
 import { roleList, segmentOptionalRoles } from "./data/roles";
 import { segments, segmentMap } from "./data/segments";
 import {
@@ -18,6 +18,25 @@ import { SegmentSelectionScreen } from "./components/SegmentSelectionScreen";
 import { PolicyControlsScreen } from "./components/PolicyControlsScreen";
 import { SimulationScreen } from "./components/SimulationScreen";
 import { ResultScreen } from "./components/ResultScreen";
+import { DemoRoute } from "./components/DemoRoute";
+import { ContentRoute } from "./components/ContentRoute";
+
+const reviewRoutes = new Set(["demo", "content"]);
+
+function parseLocation(pathname, search) {
+  const parts = pathname.split("/").filter(Boolean);
+  const last = parts.at(-1);
+  const route = reviewRoutes.has(last) ? last : "app";
+  const baseParts = route === "app" ? parts : parts.slice(0, -1);
+  const basePath = `/${baseParts.join("/")}`.replace(/\/+/g, "/") || "/";
+  const params = new URLSearchParams(search);
+
+  return {
+    route,
+    basePath,
+    debug: params.get("debug") === "true"
+  };
+}
 
 const steps = {
   start: 0,
@@ -38,9 +57,13 @@ const screenTitles = {
 };
 
 function App() {
+  const [routeState, setRouteState] = useState(() =>
+    parseLocation(window.location.pathname, window.location.search)
+  );
   const [screen, setScreen] = useState("start");
   const [role, setRole] = useState("politics");
   const [segment, setSegment] = useState(null);
+  const [policyGoal, setPolicyGoal] = useState("exploitation");
   const [sliders, setSliders] = useState(defaultSliders);
   const [preset, setPreset] = useState("custom");
   const [presetSource, setPresetSource] = useState(null);
@@ -50,8 +73,8 @@ function App() {
   const canSkipSegment = segmentOptionalRoles.includes(role);
 
   const result = useMemo(
-    () => calculateScenario({ role, segment, sliders }),
-    [role, segment, sliders]
+    () => calculateScenario({ role, segment, sliders, policyGoal }),
+    [role, segment, sliders, policyGoal]
   );
 
   const perspectiveShift = useMemo(
@@ -66,7 +89,7 @@ function App() {
         const scenario =
           entry.id === "custom"
             ? result
-            : calculateScenario({ role, segment, sliders: entry.sliders });
+            : calculateScenario({ role, segment, sliders: entry.sliders, policyGoal });
 
         return {
           ...entry,
@@ -78,7 +101,7 @@ function App() {
           })
         };
       }),
-    [activeRole, result, role, segment]
+    [activeRole, policyGoal, result, role, segment]
   );
 
   const segmentComparisons = useMemo(
@@ -87,13 +110,36 @@ function App() {
         id: entry.id,
         label: entry.label,
         summary: entry.summary,
-        scenario: calculateScenario({ role, segment: entry.id, sliders })
+        scenario: calculateScenario({ role, segment: entry.id, sliders, policyGoal })
       })),
-    [role, sliders]
+    [policyGoal, role, sliders]
   );
 
+  const navigateTo = (route) => {
+    const nextPath =
+      route === "app"
+        ? routeState.basePath
+        : `${routeState.basePath.replace(/\/$/, "")}/${route}`;
+    const search = routeState.debug ? "?debug=true" : "";
+    window.history.pushState({}, "", `${nextPath}${search}`);
+    setRouteState(parseLocation(window.location.pathname, window.location.search));
+  };
+
+  useEffect(() => {
+    const handlePopState = () =>
+      setRouteState(parseLocation(window.location.pathname, window.location.search));
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const handleRoleNext = () => {
-    setSegment(canSkipSegment ? null : segments[0].id);
+    if (canSkipSegment) {
+      setSegment(null);
+      setScreen("controls");
+      return;
+    }
+
+    setSegment(segments[0].id);
     setScreen("segment");
   };
 
@@ -118,6 +164,7 @@ function App() {
     setScreen("start");
     setRole("politics");
     setSegment(null);
+    setPolicyGoal("exploitation");
     setSliders(defaultSliders);
     setPreset("custom");
     setPresetSource(null);
@@ -129,75 +176,111 @@ function App() {
       <div className="fixed inset-0 -z-10 bg-grid bg-[size:36px_36px] opacity-20" />
 
       <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        <ProgressHeader step={steps[screen]} title={screenTitles[screen]} />
+        <ProgressHeader
+          step={steps[screen]}
+          title={routeState.route === "app" ? screenTitles[screen] : routeState.route}
+          route={routeState.route}
+          debug={routeState.debug}
+          onNavigate={navigateTo}
+        />
 
-        {screen === "start" ? (
-          <StartScreen onStart={() => setScreen("role")} />
-        ) : null}
-
-        {screen === "role" ? (
-          <RoleSelectionScreen
+        {routeState.route === "demo" ? (
+          <DemoRoute
             roles={roleList}
-            activeRole={role}
-            onSelectRole={setRole}
-            onNext={handleRoleNext}
-          />
-        ) : null}
-
-        {screen === "segment" ? (
-          <SegmentSelectionScreen
-            roleLabel={activeRole.label}
             segments={segments}
-            selectedSegment={segment}
-            onSelectSegment={setSegment}
-            canSkip={canSkipSegment}
-            onBack={() => setScreen("role")}
-            onNext={() => setScreen("controls")}
-          />
-        ) : null}
-
-        {screen === "controls" ? (
-          <PolicyControlsScreen
-            role={activeRole}
-            segment={activeSegment}
-            sliders={sliders}
-            preset={preset}
             presets={ideologyPresets}
-            onPresetChange={handlePresetChange}
-            onSliderChange={handleSliderChange}
-            presetSource={presetSource}
-            onBack={() => setScreen("segment")}
-            onNext={() => setScreen("simulation")}
-            preview={result}
-            comparisonModels={comparisonModels}
-            segmentComparisons={segmentComparisons}
+            policyGoal={policyGoal}
+            debug={routeState.debug}
           />
         ) : null}
 
-        {screen === "simulation" ? (
-          <SimulationScreen
-            role={activeRole}
-            segment={activeSegment}
-            result={result}
-            onBack={() => setScreen("controls")}
-            onNext={() => setScreen("result")}
-            perspectiveShift={perspectiveShift}
-            segmentComparisons={segmentComparisons}
-          />
+        {routeState.route === "content" ? (
+          <ContentRoute debug={routeState.debug} />
         ) : null}
 
-        {screen === "result" ? (
-          <ResultScreen
-            role={activeRole}
-            segment={activeSegment}
-            summary={summary}
-            result={result}
-            preset={preset}
-            presetSource={presetSource}
-            onBack={() => setScreen("simulation")}
-            onRestart={handleRestart}
-          />
-        ) : null}
+        {routeState.route !== "app" ? null : (
+          <>
+            {screen === "start" ? (
+              <StartScreen onStart={() => setScreen("role")} />
+            ) : null}
+
+            {screen === "role" ? (
+              <RoleSelectionScreen
+                roles={roleList}
+                activeRole={role}
+                onSelectRole={setRole}
+                onNext={handleRoleNext}
+              />
+            ) : null}
+
+            {screen === "segment" ? (
+              <SegmentSelectionScreen
+                roleLabel={activeRole.label}
+                segments={segments}
+                selectedSegment={segment}
+                onSelectSegment={setSegment}
+                canSkip={canSkipSegment}
+                onBack={() => setScreen("role")}
+                onNext={() => setScreen("controls")}
+              />
+            ) : null}
+
+            {screen === "controls" ? (
+              <PolicyControlsScreen
+                role={activeRole}
+                segment={activeSegment}
+                sliders={sliders}
+                policyGoal={policyGoal}
+                policyGoals={politicalGoals}
+                onPolicyGoalChange={setPolicyGoal}
+                preset={preset}
+                presets={ideologyPresets}
+                onPresetChange={handlePresetChange}
+                onSliderChange={handleSliderChange}
+                presetSource={presetSource}
+                onBack={() => setScreen(canSkipSegment ? "role" : "segment")}
+                onNext={() => setScreen("simulation")}
+                preview={result}
+                comparisonModels={comparisonModels}
+                segmentComparisons={segmentComparisons}
+                debug={routeState.debug}
+              />
+            ) : null}
+
+            {screen === "simulation" ? (
+              <SimulationScreen
+                role={activeRole}
+                segment={activeSegment}
+                result={result}
+                policyGoal={politicalGoals.find((entry) => entry.id === policyGoal)}
+                preset={ideologyPresets.find((entry) => entry.id === preset)}
+                sliders={sliders}
+                onBack={() => setScreen("controls")}
+                onNext={() => setScreen("result")}
+                perspectiveShift={perspectiveShift}
+                segmentComparisons={segmentComparisons}
+                debug={routeState.debug}
+                summary={summary}
+              />
+            ) : null}
+
+            {screen === "result" ? (
+              <ResultScreen
+                role={activeRole}
+                segment={activeSegment}
+                summary={summary}
+                result={result}
+                preset={preset}
+                presetSource={presetSource}
+                policyGoal={politicalGoals.find((entry) => entry.id === policyGoal)}
+                sliders={sliders}
+                debug={routeState.debug}
+                onBack={() => setScreen("simulation")}
+                onRestart={handleRestart}
+              />
+            ) : null}
+          </>
+        )}
       </main>
     </div>
   );

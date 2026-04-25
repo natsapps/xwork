@@ -45,6 +45,12 @@ export function RoleSelectionScreen({ roles, activeRole, onSelectRole, onNext })
               {selectedRole.icon} {selectedRole.label}
             </p>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-mist/72">{selectedRole.intro}</p>
+            {["politics", "journalism", "society"].includes(selectedRole.id) ? (
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-gold">
+                Diese Perspektive springt direkt zu den politischen Stellschrauben. Die
+                segmentübergreifende Wirkung siehst du danach im Cockpit.
+              </p>
+            ) : null}
           </div>
         ) : null}
 
