@@ -132,6 +132,29 @@ function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const tagName = event.target?.tagName?.toLowerCase();
+      const isEditable =
+        tagName === "input" ||
+        tagName === "textarea" ||
+        event.target?.isContentEditable;
+
+      if (isEditable) return;
+
+      if (event.key === "d" || event.key === "D") {
+        navigateTo("demo");
+      }
+
+      if (event.key === "c" || event.key === "C") {
+        navigateTo("content");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [routeState.basePath, routeState.debug]);
+
   const handleRoleNext = () => {
     if (canSkipSegment) {
       setSegment(null);
