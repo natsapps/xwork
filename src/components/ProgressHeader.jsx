@@ -1,6 +1,13 @@
 import { useRef } from "react";
 
-export function ProgressHeader({ step, title, route = "app", debug = false, onNavigate }) {
+export function ProgressHeader({
+  step,
+  title,
+  route = "app",
+  debug = false,
+  onNavigate,
+  buildMeta
+}) {
   const steps = ["Start", "Rolle", "Segment", "Stellschrauben", "Wirkung", "Fazit"];
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef(null);
@@ -53,7 +60,14 @@ export function ProgressHeader({ step, title, route = "app", debug = false, onNa
           </div>
         ))}
       </div>
-      <p className="text-sm text-mist/60">{title}</p>
+      <div className="text-right">
+        <p className="text-sm text-mist/60">{title}</p>
+        {buildMeta ? (
+          <p className="mt-1 text-xs text-mist/40">
+            Build {buildMeta.commit}
+          </p>
+        ) : null}
+      </div>
     </header>
   );
 }

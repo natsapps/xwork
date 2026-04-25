@@ -20,6 +20,7 @@ import { SimulationScreen } from "./components/SimulationScreen";
 import { ResultScreen } from "./components/ResultScreen";
 import { DemoRoute } from "./components/DemoRoute";
 import { ContentRoute } from "./components/ContentRoute";
+import { BUILD_META } from "./lib/buildMeta";
 
 const reviewRoutes = new Set(["demo", "content"]);
 
@@ -67,6 +68,7 @@ function App() {
   const [sliders, setSliders] = useState(defaultSliders);
   const [preset, setPreset] = useState("custom");
   const [presetSource, setPresetSource] = useState(null);
+  const [updateInfo, setUpdateInfo] = useState(null);
 
   const activeRole = roleList.find((item) => item.id === role);
   const activeSegment = segment ? segmentMap[segment] : null;
@@ -155,6 +157,40 @@ function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [routeState.basePath, routeState.debug]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkForUpdate = async () => {
+      try {
+        const versionUrl = new URL("version.json", window.location.href);
+        versionUrl.searchParams.set("t", String(Date.now()));
+
+        const response = await fetch(versionUrl.toString(), {
+          cache: "no-store"
+        });
+
+        if (!response.ok) return;
+
+        const latest = await response.json();
+        if (cancelled) return;
+
+        if (latest.buildId && latest.buildId !== BUILD_META.buildId) {
+          setUpdateInfo(latest);
+        }
+      } catch {
+        // Ignore version check errors and keep the app usable.
+      }
+    };
+
+    checkForUpdate();
+    const intervalId = window.setInterval(checkForUpdate, 30000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   const handleRoleNext = () => {
     if (canSkipSegment) {
       setSegment(null);
@@ -205,7 +241,21 @@ function App() {
           route={routeState.route}
           debug={routeState.debug}
           onNavigate={navigateTo}
+          buildMeta={BUILD_META}
         />
+
+        {updateInfo ? (
+          <div className="rounded-[24px] border border-gold/20 bg-gold/10 p-4 text-sm leading-7 text-mist">
+            Neue Version verfugbar. Geladen ist {BUILD_META.commit}, online liegt {updateInfo.commit}.
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="ml-3 rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-mist"
+            >
+              Neu laden
+            </button>
+          </div>
+        ) : null}
 
         {routeState.route === "demo" ? (
           <DemoRoute
