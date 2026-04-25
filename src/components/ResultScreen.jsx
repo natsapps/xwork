@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { disclaimer, finalStatement, keyMessage } from "../data/config";
 import { ideologyPresets } from "../data/presets";
-import { generatePoliticalCopy } from "../lib/simulation";
+import { generatePoliticalCopy, getDecisionImpact } from "../lib/simulation";
 import { DebugPanel } from "./DebugPanel";
 
 export function ResultScreen({
@@ -25,6 +25,7 @@ export function ResultScreen({
         : "Eigene Einstellung"
       : ideologyPresets.find((entry) => entry.id === preset)?.label;
   const copyText = generatePoliticalCopy({ role, result, presetId: preset });
+  const decisionImpact = getDecisionImpact(result);
 
   const handleCopy = async () => {
     try {
@@ -90,6 +91,65 @@ export function ResultScreen({
             <span className="self-center text-sm text-mist/60">
               {copied ? "Kopiert." : "Kurzfassung für Politik, Medien oder Verbände."}
             </span>
+          </div>
+        </div>
+        <div className="rounded-[24px] border border-white/10 bg-white/5 p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
+            Tatsächliche Wirkung dieser Entscheidung
+          </p>
+          <div className="mt-4 space-y-4">
+            <div className="rounded-[18px] border border-emerald-300/20 bg-emerald-300/10 p-4">
+              <p className="text-sm font-semibold text-mist">1. Was verbessert sich?</p>
+              <ul className="mt-2 space-y-2 text-sm leading-7 text-mist/76">
+                {decisionImpact.improves.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[18px] border border-rust/20 bg-rust/10 p-4">
+              <p className="text-sm font-semibold text-mist">2. Was verschlechtert sich?</p>
+              <ul className="mt-2 space-y-2 text-sm leading-7 text-mist/76">
+                {decisionImpact.worsens.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
+              <p className="text-sm font-semibold text-mist">
+                3. Was ist die wahrscheinlichste Systemreaktion?
+              </p>
+              <p className="mt-2 text-sm leading-7 text-mist/72">{decisionImpact.systemReaction}</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-[24px] border border-white/10 bg-white/5 p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+            Politische Einordnung
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {[
+              "Wirksame Schutzpolitik",
+              "Risiko von Verlagerung",
+              "Symbolische Härte ohne Wirkung"
+            ].map((label) => {
+              const active = decisionImpact.classification.title === label;
+
+              return (
+                <div
+                  key={label}
+                  className={`rounded-[18px] border p-4 ${
+                    active
+                      ? "border-gold bg-gold/10"
+                      : "border-white/10 bg-black/25"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-mist">{label}</p>
+                  <p className="mt-2 text-sm leading-7 text-mist/72">
+                    {active ? decisionImpact.classification.text : "In diesem Szenario nicht dominant."}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
         {segment ? (

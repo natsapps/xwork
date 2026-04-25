@@ -185,6 +185,78 @@ export function getGoalFit(goalId, outputs) {
   return goals[goalId] ?? goals.exploitation;
 }
 
+export function getDecisionImpact(result) {
+  const { outputs, compass, policyCheck } = result;
+  const improves = [];
+  const worsens = [];
+
+  if (outputs.visibility >= 55) improves.push("Sichtbarkeit steigt");
+  if (outputs.safety >= 55) improves.push("Sicherheit steigt");
+  if (outputs.access >= 55) improves.push("Zugang zu Hilfe verbessert sich");
+  if (outputs.coercionControl >= 58) improves.push("Ausbeutung und Zwang werden besser bekämpfbar");
+  if (outputs.selfDetermination >= 55) improves.push("Selbstbestimmte Arbeit wird besser geschützt");
+  if (outputs.displacement <= 44) improves.push("Verlagerungsrisiko sinkt");
+
+  if (outputs.visibility < 45) worsens.push("Sichtbarkeit sinkt");
+  if (outputs.underground >= 55) worsens.push("Untergrundanteil steigt");
+  if (outputs.displacement >= 50) worsens.push("Verlagerungsrisiko steigt");
+  if (outputs.access < 45) worsens.push("Zugang zu Hilfe verschlechtert sich");
+  if (outputs.trust < 45) worsens.push("Vertrauen sinkt");
+  if (outputs.exploitationRisk >= 55) worsens.push("Risiko für Ausbeutung steigt");
+
+  let systemReaction =
+    "Das System reagiert gemischt: Ein Teil bleibt bearbeitbar, ein anderer Teil zieht sich in unsicherere oder schwerer steuerbare Räume zurück.";
+
+  if (policyCheck.verdict === "Wirksame Schutzpolitik") {
+    systemReaction =
+      "Die wahrscheinlichste Systemreaktion ist mehr Sichtbarkeit, mehr Erreichbarkeit und eine höhere Chance, Ausbeutung tatsächlich zu erkennen und zu bearbeiten.";
+  } else if (compass.verdict === "Symbolische Härte mit Verlagerungsrisiko") {
+    systemReaction =
+      "Die wahrscheinlichste Systemreaktion ist Verdrängung: sichtbare Bereiche schrumpfen, während heimlichere und schwerer kontrollierbare Räume wachsen.";
+  } else if (compass.verdict === "Schutzabsicht mit Rückzugsrisiko") {
+    systemReaction =
+      "Die wahrscheinlichste Systemreaktion ist Rückzug trotz Schutzabsicht: Regeln wirken formal schützend, werden aber in Teilen als Risiko erlebt und unterlaufen.";
+  }
+
+  let classification = {
+    title: "Risiko von Verlagerung",
+    text: "Die Konstellation bleibt politisch gemischt und erzeugt spürbare Zielkonflikte zwischen Schutz, Zugang und Verdrängung."
+  };
+
+  if (
+    outputs.visibility >= 55 &&
+    outputs.infrastructure >= 55 &&
+    outputs.anonymity >= 55 &&
+    outputs.enforcement >= 55
+  ) {
+    classification = {
+      title: "Wirksame Schutzpolitik",
+      text: "Die Kombination stärkt Sichtbarkeit, Schutz, Identitätsschutz und gezielte Durchsetzung zugleich."
+    };
+  } else if (
+    outputs.prohibition >= 68 &&
+    outputs.visibility < 48 &&
+    outputs.underground >= 55
+  ) {
+    classification = {
+      title: "Symbolische Härte ohne Wirkung",
+      text: "Die Maßnahme wirkt hart, verliert aber an Sichtbarkeit und drängt Aktivität eher in den Untergrund."
+    };
+  } else if (outputs.regulation >= 68 && outputs.anonymity < 46) {
+    classification = {
+      title: "Risiko von Verlagerung",
+      text: "Die Maßnahme hat Schutzabsichten, erzeugt aber Rückzug, wenn Anonymität und Identitätsschutz nicht mitgedacht werden."
+    };
+  }
+
+  return {
+    improves: improves.length ? improves : ["Keine klare Verbesserung dominiert."],
+    worsens: worsens.length ? worsens : ["Keine klare Verschlechterung dominiert."],
+    systemReaction,
+    classification
+  };
+}
+
 function getRecommendation(result) {
   const { outputs, compass, policyCheck, goalFit } = result;
 
