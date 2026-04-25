@@ -8,6 +8,7 @@ export function SegmentSelectionScreen({
   canSkip
 }) {
   const activeSegment = segments.find((segment) => segment.id === selectedSegment);
+  const showSystemHint = canSkip;
 
   return (
     <section className="flex min-h-[78vh] flex-col justify-center">
@@ -21,6 +22,13 @@ export function SegmentSelectionScreen({
             Rolle: {roleLabel}. Segment bedeutet hier: In welchem realen Feld wirken
             Bedürfnisse, Schutz, Risiken und professionelle Anforderungen?
           </p>
+          {showSystemHint ? (
+            <p className="mx-auto max-w-3xl text-sm leading-7 text-mist/74">
+              Für {roleLabel} ist ein Segment kein Muss. Du kannst auf das Gesamtsystem
+              schauen oder prüfen, wie dieselbe politische Entscheidung in unterschiedlichen
+              Feldern wie Escort, Laufhaus, BDSM oder Online wirkt.
+            </p>
+          ) : null}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -64,7 +72,7 @@ export function SegmentSelectionScreen({
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
               Segmentstruktur
             </p>
-            <div className="mt-4 grid gap-4 lg:grid-cols-5">
+            <div className="mt-4 space-y-4">
               <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
                 <p className="text-sm font-semibold text-mist">1. Bedarf</p>
                 <p className="mt-2 text-sm leading-7 text-mist/72">{activeSegment.need}</p>
@@ -72,20 +80,19 @@ export function SegmentSelectionScreen({
               <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
                 <p className="text-sm font-semibold text-mist">2. Wirkung für die Person</p>
                 <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.personEffect[0]}, {activeSegment.personEffect[1]} und ein
-                  klarer, begrenzter Rahmen.
+                  {activeSegment.personEffect.join(", ")}.
                 </p>
               </div>
               <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
                 <p className="text-sm font-semibold text-mist">3. Gesellschaftliche Funktion</p>
                 <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.socialFunction[0]}.
+                  {activeSegment.socialFunction.join(", ")}.
                 </p>
               </div>
               <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-semibold text-mist">4. Wegfall</p>
+                <p className="text-sm font-semibold text-mist">4. Wegfall = Verlagerung</p>
                 <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.absence[0]}.
+                  {activeSegment.absence.join(", ")}.
                 </p>
               </div>
               <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">

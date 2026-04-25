@@ -81,6 +81,17 @@ function App() {
     [activeRole, result, role, segment]
   );
 
+  const segmentComparisons = useMemo(
+    () =>
+      segments.map((entry) => ({
+        id: entry.id,
+        label: entry.label,
+        summary: entry.summary,
+        scenario: calculateScenario({ role, segment: entry.id, sliders })
+      })),
+    [role, sliders]
+  );
+
   const handleRoleNext = () => {
     setSegment(canSkipSegment ? null : segments[0].id);
     setScreen("segment");
@@ -159,6 +170,7 @@ function App() {
             onNext={() => setScreen("simulation")}
             preview={result}
             comparisonModels={comparisonModels}
+            segmentComparisons={segmentComparisons}
           />
         ) : null}
 
@@ -170,6 +182,7 @@ function App() {
             onBack={() => setScreen("controls")}
             onNext={() => setScreen("result")}
             perspectiveShift={perspectiveShift}
+            segmentComparisons={segmentComparisons}
           />
         ) : null}
 

@@ -121,7 +121,8 @@ export function SimulationScreen({
   result,
   onBack,
   onNext,
-  perspectiveShift
+  perspectiveShift,
+  segmentComparisons
 }) {
   const dominantOutputData = [
     { key: "Infrastrukturwirkung", value: result.outputs.infrastructure, fill: "#7de2c3" },
@@ -205,6 +206,48 @@ export function SimulationScreen({
               ))}
             </div>
           </div>
+
+          {!segment && ["politics", "journalism", "society"].includes(role.id) ? (
+            <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+                Unterschiedliche Wirkung je Segment
+              </p>
+              <p className="mt-3 text-sm leading-7 text-mist/72">
+                Dieselbe Politik wirkt nicht in jedem Feld gleich. Hier siehst du, in welchen
+                Segmenten Infrastruktur trägt, wo Verlagerungsrisiken steigen und wo Zwang
+                besser oder schlechter erkennbar wird.
+              </p>
+              <div className="mt-4 space-y-4">
+                {segmentComparisons.map((entry) => (
+                  <div key={entry.id} className="rounded-[22px] border border-white/10 bg-black/25 p-4">
+                    <p className="text-lg font-semibold text-mist">{entry.label}</p>
+                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      <MetricCard
+                        label="Infrastrukturwirkung"
+                        value={entry.scenario.outputs.infrastructure}
+                        tone="good"
+                      />
+                      <MetricCard
+                        label="Verlagerungsrisiko"
+                        value={entry.scenario.outputs.displacement}
+                        tone="warn"
+                      />
+                      <MetricCard
+                        label="Bekämpfbarkeit von Zwang"
+                        value={entry.scenario.outputs.coercionControl}
+                        tone="good"
+                      />
+                      <MetricCard
+                        label="Gesellschaftlicher Schaden"
+                        value={entry.scenario.outputs.damage}
+                        tone="danger"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {roleView ? (
             <div className="space-y-4">

@@ -51,7 +51,8 @@ export function PolicyControlsScreen({
   onBack,
   onNext,
   preview,
-  comparisonModels
+  comparisonModels,
+  segmentComparisons
 }) {
   const [showComparison, setShowComparison] = useState(false);
   const activePreset = presets.find((entry) => entry.id === preset);
@@ -175,6 +176,49 @@ export function PolicyControlsScreen({
             Zwangsbekämpfung und gesellschaftlichem Schaden passiert.
           </p>
         </div>
+
+        {!segment && ["politics", "journalism", "society"].includes(role.id) ? (
+          <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+              Wirkung über alle Segmente
+            </p>
+            <p className="mt-3 text-sm leading-7 text-mist/72">
+              Du bist hier nicht auf ein einzelnes Feld festgelegt. Diese Übersicht zeigt, wie
+              dieselbe politische Kombination auf Escort, Laufhaus, BDSM, Events, Nähe,
+              Online-Arbeit und andere Segmente unterschiedlich wirkt.
+            </p>
+            <div className="mt-4 space-y-4">
+              {segmentComparisons.map((entry) => (
+                <div key={entry.id} className="rounded-[22px] border border-white/10 bg-black/25 p-4">
+                  <p className="text-lg font-semibold text-mist">{entry.label}</p>
+                  <p className="mt-2 text-sm leading-7 text-mist/66">{entry.summary}</p>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <CompareMetric
+                      label="Infrastrukturwirkung"
+                      value={entry.scenario.outputs.infrastructure}
+                      tone="good"
+                    />
+                    <CompareMetric
+                      label="Verlagerungsrisiko"
+                      value={entry.scenario.outputs.displacement}
+                      tone="warn"
+                    />
+                    <CompareMetric
+                      label="Bekämpfbarkeit von Zwang"
+                      value={entry.scenario.outputs.coercionControl}
+                      tone="accent"
+                    />
+                    <CompareMetric
+                      label="Gesellschaftlicher Schaden"
+                      value={entry.scenario.outputs.damage}
+                      tone="danger"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {showComparison ? (
