@@ -367,7 +367,15 @@ export function getResultSummary({ result }) {
   return "Die aktuelle Kombination bleibt gemischt: Ein Teil der Schutzwirkung ist da, aber Verlagerung, Unsicherheit oder mangelnder Zugang bremsen die politische Wirksamkeit.";
 }
 
-export function generatePoliticalCopy({ role, result }) {
+export function generatePoliticalCopy({ role, result, presetId = "custom" }) {
+  if (presetId === "sag") {
+    return "Im SAG-Szenario steigen Sichtbarkeit, Anonymität, Schutzinfrastruktur und Bekämpfbarkeit von Zwang. Das Modell setzt nicht auf Verdrängung, sondern auf Rechte, Zugang und gezielte Intervention.";
+  }
+
+  if (presetId === "repressive") {
+    return "Im repressiven Szenario steigt zwar der Verbotsdruck, aber Sichtbarkeit und Vertrauen sinken. Dadurch wächst das Risiko, dass Ausbeutung schwerer erkennbar wird.";
+  }
+
   const { outputs, compass } = result;
 
   if (compass.verdict === "Wirksame Schutzpolitik") {

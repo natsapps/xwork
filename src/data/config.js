@@ -42,64 +42,87 @@ export const defaultSliders = {
 
 export const ideologyPresets = [
   {
-    id: "custom",
-    label: "Manuell",
-    description: "Du stellst die sechs politischen Stellschrauben frei selbst ein.",
-    sliders: defaultSliders
+    id: "statusQuo",
+    label: "Status Quo / ProstSchG",
+    description:
+      "Schutzabsicht mit Regulierung, aber weiter hohes Stigma, schwache Anonymität und relevante Rückzugsrisiken.",
+    sliders: {
+      prohibition: 45,
+      regulation: 60,
+      stigma: 70,
+      infrastructure: 45,
+      anonymity: 25,
+      enforcement: 55
+    },
+    evaluation:
+      "Dieses Modell erzeugt Schutzabsichten, aber auch Rückzugsrisiken durch Anmeldung, Stigma und Datenschutzängste."
   },
   {
-    id: "prohibition",
-    label: "Verbot",
-    description: "Hoher Verbotsdruck, wenig Schutz, wenig Anonymität, eher symbolische Härte.",
+    id: "repressive",
+    label: "Repressives Modell",
+    description:
+      "Hoher Verbotsdruck, hohe Stigmatisierung, begrenzte Schutzinfrastruktur und starke Verdrängungsdynamik.",
     sliders: {
       prohibition: 90,
+      regulation: 35,
+      stigma: 85,
+      infrastructure: 35,
+      anonymity: 20,
+      enforcement: 65
+    },
+    evaluation:
+      "Dieses Modell wirkt nach außen hart, erhöht aber das Risiko von Unsichtbarkeit, Untergrund und erschwertem Zugang zu Hilfe."
+  },
+  {
+    id: "liberal",
+    label: "Liberales Minimalmodell",
+    description:
+      "Wenig Repression und relativ viel Anonymität, aber nur schwache Standards und geringe Schutzinfrastruktur.",
+    sliders: {
+      prohibition: 10,
       regulation: 20,
-      stigma: 82,
-      infrastructure: 18,
-      anonymity: 22,
-      enforcement: 42
-    }
+      stigma: 40,
+      infrastructure: 25,
+      anonymity: 70,
+      enforcement: 30
+    },
+    evaluation:
+      "Dieses Modell reduziert Repression, bietet aber ohne starke Schutzinfrastruktur zu wenig gezielte Absicherung gegen Ausbeutung."
   },
   {
-    id: "nordic",
-    label: "Nordisches Modell",
-    description: "Hoher Druck auf Nachfrage, gewisse Schutzabsicht, aber weiter hohes Verlagerungsrisiko.",
+    id: "sag",
+    label: "SAG-Modell",
+    description:
+      "Rechtebasiertes Szenario mit Entstigmatisierung, hoher Anonymität, Schutzinfrastruktur und gezielter Bekämpfung von Ausbeutung.",
     sliders: {
-      prohibition: 74,
-      regulation: 38,
-      stigma: 68,
-      infrastructure: 34,
-      anonymity: 30,
-      enforcement: 56
-    }
+      prohibition: 10,
+      regulation: 75,
+      stigma: 20,
+      infrastructure: 85,
+      anonymity: 90,
+      enforcement: 80
+    },
+    evaluation:
+      "Dieses Modell setzt auf Rechte, Anonymität, sichere Arbeitsorte, Beratung und gezielte Bekämpfung von Ausbeutung. Dadurch steigt die Chance, Probleme sichtbar und bearbeitbar zu machen.",
+    explanation:
+      "Das SAG-Modell basiert auf einem community-basierten Ansatz: Entkriminalisierung, Rechte, Schutzinfrastruktur, Anonymität, faire Arbeitsbedingungen, Antidiskriminierung und gezielte Bekämpfung von Ausbeutung.",
+    neutralFrame:
+      "Dieses Szenario simuliert, welche Wirkungen ein stärker rechtebasierter und entstigmatisierender Ansatz erzeugen könnte."
   },
   {
-    id: "legality",
-    label: "Regulierte Legalität",
-    description: "Mehr Regeln, bessere Standards, mehr Sichtbarkeit - aber nur wirksam, wenn Identitätsschutz mitgedacht wird.",
-    sliders: {
-      prohibition: 24,
-      regulation: 78,
-      stigma: 36,
-      infrastructure: 74,
-      anonymity: 58,
-      enforcement: 64
-    }
-  },
-  {
-    id: "impact",
-    label: "Wirkungsorientiert",
-    description: "Schutz, Anonymität, Sichtbarkeit und gezielte Ausbeutungsbekämpfung werden gemeinsam priorisiert.",
-    sliders: {
-      prohibition: 16,
-      regulation: 86,
-      stigma: 24,
-      infrastructure: 88,
-      anonymity: 84,
-      enforcement: 82
-    }
+    id: "custom",
+    label: "Eigene Einstellung",
+    description: "Du stellst die sechs politischen Stellschrauben frei selbst ein.",
+    sliders: defaultSliders,
+    evaluation: "Dieses Szenario zeigt die Wirkung deiner gewählten Kombination."
   }
 ];
+
+export const sagSourceBox =
+  "Das SAG versteht Sexarbeit als vielfältiges Arbeitsfeld und fordert unter anderem Entkriminalisierung, freiwillige Beratung, Datenschutz, Anonymität, faire Arbeitsorte, Antidiskriminierung, Peer-to-Peer-Beratung und gezielte Maßnahmen gegen Menschenhandel und Ausbeutung.";
+
+export const comparisonClosing =
+  "Gute Politik erkennt man nicht daran, wie hart sie klingt, sondern daran, ob sie Schutz erhöht, Ausbeutung sichtbar macht und Verlagerung verhindert.";
 
 export const keyMessage =
   "Wenn soziale Infrastruktur fehlt, verschwinden Bedürfnisse nicht. Sie verlagern sich in weniger sichtbare und weniger kontrollierbare Räume.";

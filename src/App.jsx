@@ -7,6 +7,7 @@ import { roleList, segmentOptionalRoles } from "./data/roles";
 import { segments, segmentMap } from "./data/segments";
 import {
   calculateScenario,
+  generatePoliticalCopy,
   getPerspectiveShift,
   getResultSummary
 } from "./lib/simulation";
@@ -42,6 +43,7 @@ function App() {
   const [segment, setSegment] = useState(null);
   const [sliders, setSliders] = useState(defaultSliders);
   const [preset, setPreset] = useState("custom");
+  const [presetSource, setPresetSource] = useState(null);
 
   const activeRole = roleList.find((item) => item.id === role);
   const activeSegment = segment ? segmentMap[segment] : null;
@@ -58,6 +60,26 @@ function App() {
   );
 
   const summary = useMemo(() => getResultSummary({ result }), [result]);
+  const comparisonModels = useMemo(
+    () =>
+      ideologyPresets.map((entry) => {
+        const scenario =
+          entry.id === "custom"
+            ? result
+            : calculateScenario({ role, segment, sliders: entry.sliders });
+
+        return {
+          ...entry,
+          scenario,
+          copy: generatePoliticalCopy({
+            role: activeRole,
+            result: scenario,
+            presetId: entry.id
+          })
+        };
+      }),
+    [activeRole, result, role, segment]
+  );
 
   const handleRoleNext = () => {
     setSegment(canSkipSegment ? null : segments[0].id);
@@ -65,7 +87,11 @@ function App() {
   };
 
   const handleSliderChange = (key, value) => {
+    const activePreset = ideologyPresets.find((entry) => entry.id === preset);
     setSliders((current) => ({ ...current, [key]: value }));
+    if (activePreset && activePreset.id !== "custom") {
+      setPresetSource(activePreset.label);
+    }
     setPreset("custom");
   };
 
@@ -73,6 +99,7 @@ function App() {
     const nextPreset = ideologyPresets.find((entry) => entry.id === presetId);
     if (!nextPreset) return;
     setPreset(presetId);
+    setPresetSource(null);
     setSliders({ ...nextPreset.sliders });
   };
 
@@ -82,6 +109,7 @@ function App() {
     setSegment(null);
     setSliders(defaultSliders);
     setPreset("custom");
+    setPresetSource(null);
   };
 
   return (
@@ -126,9 +154,11 @@ function App() {
             presets={ideologyPresets}
             onPresetChange={handlePresetChange}
             onSliderChange={handleSliderChange}
+            presetSource={presetSource}
             onBack={() => setScreen("segment")}
             onNext={() => setScreen("simulation")}
             preview={result}
+            comparisonModels={comparisonModels}
           />
         ) : null}
 
@@ -149,6 +179,8 @@ function App() {
             segment={activeSegment}
             summary={summary}
             result={result}
+            preset={preset}
+            presetSource={presetSource}
             onBack={() => setScreen("simulation")}
             onRestart={handleRestart}
           />
