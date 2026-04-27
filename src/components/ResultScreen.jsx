@@ -76,9 +76,12 @@ export function ResultScreen({
           <p className="mt-4 text-sm leading-7 text-mist/76">{result.roleResultFrame}</p>
           <p className="mt-4 text-sm leading-7 text-mist/84">{result.recommendation}</p>
           {policyGoal ? (
-            <p className="mt-4 text-sm leading-7 text-mist/72">
-              Politisches Ziel: {policyGoal.label}. Ziel-Fit: {result.goalFit.score}
-            </p>
+            <div className="mt-4 rounded-[18px] border border-white/10 bg-black/25 p-4">
+              <p className="text-sm font-semibold text-mist">
+                Politisches Ziel: {policyGoal.label} · Ziel-Fit: {result.goalFit.score}
+              </p>
+              <p className="mt-2 text-sm leading-7 text-mist/72">{result.goalFit.resultLens}</p>
+            </div>
           ) : null}
           <div className="mt-5 flex flex-wrap gap-3">
             <button

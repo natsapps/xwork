@@ -1,25 +1,93 @@
 import { defaultSliders } from "./config";
 
-export const politicalGoals = [
+export const politicalGoalCategories = [
   {
-    id: "exploitation",
-    label: "Ausbeutung senken",
-    description:
-      "Priorisiert Bekämpfbarkeit von Zwang, Zugang zu Hilfe und geringeres Ausbeutungsrisiko."
+    id: "protection",
+    label: "Schutz & Bearbeitbarkeit",
+    goals: [
+      {
+        id: "exploitation",
+        label: "Ausbeutung senken",
+        description:
+          "Priorisiert Bekämpfbarkeit von Zwang, Zugang zu Hilfe und geringeres Ausbeutungsrisiko."
+      },
+      {
+        id: "safety",
+        label: "Sicherheit erhöhen",
+        description:
+          "Priorisiert Schutzinfrastruktur, sichere Arbeitsorte, Sichtbarkeit und verlässliche Standards."
+      },
+      {
+        id: "underground",
+        label: "Untergrund vermeiden",
+        description:
+          "Priorisiert Sichtbarkeit, Anonymität, Zugang und geringe Verlagerung in unsichere Räume."
+      }
+    ]
   },
   {
-    id: "safety",
-    label: "Sicherheit erhöhen",
-    description:
-      "Priorisiert Schutzinfrastruktur, sichere Arbeitsorte, Sichtbarkeit und verlässliche Standards."
+    id: "order-control",
+    label: "Ordnung & Kontrolle",
+    goals: [
+      {
+        id: "control",
+        label: "Kontrolle erhöhen",
+        description:
+          "Fokus auf staatliche Steuerbarkeit, Registrierung und Durchsetzung von Regeln."
+      },
+      {
+        id: "regulation",
+        label: "Regulierung durchsetzen",
+        description:
+          "Fokus auf klare Standards, Nachweispflichten und administrative Kontrolle."
+      }
+    ]
   },
   {
-    id: "underground",
-    label: "Untergrund vermeiden",
-    description:
-      "Priorisiert Sichtbarkeit, Anonymität, Zugang und geringe Verlagerung in unsichere Räume."
+    id: "deterrence-reduction",
+    label: "Abschreckung & Reduktion",
+    goals: [
+      {
+        id: "demand",
+        label: "Nachfrage reduzieren",
+        description:
+          "Ziel ist es, Nachfrage nach Sexarbeit zu senken, z. B. durch Sanktionen."
+      },
+      {
+        id: "deterrence",
+        label: "Abschreckung erhöhen",
+        description:
+          "Fokus auf harte Maßnahmen, um Verhalten zu verhindern."
+      }
+    ]
+  },
+  {
+    id: "social-protection",
+    label: "Gesellschaftlicher Schutz",
+    goals: [
+      {
+        id: "harassment",
+        label: "Belästigung reduzieren",
+        description:
+          "Fokus auf Auswirkungen im öffentlichen Raum."
+      },
+      {
+        id: "public-order",
+        label: "Öffentliche Ordnung sichern",
+        description:
+          "Minimierung sichtbarer Sexarbeit im Alltag."
+      }
+    ]
   }
 ];
+
+export const politicalGoals = politicalGoalCategories.flatMap((category) =>
+  category.goals.map((goal) => ({
+    ...goal,
+    categoryId: category.id,
+    categoryLabel: category.label
+  }))
+);
 
 export const ideologyPresets = [
   {

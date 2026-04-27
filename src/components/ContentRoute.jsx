@@ -1,5 +1,5 @@
 import { coercionLayer, comparisonClosing, disclaimer, keyMessage, protectionLawChecklist, sagSourceBox } from "../data/config";
-import { ideologyPresets, politicalGoals } from "../data/presets";
+import { ideologyPresets, politicalGoalCategories } from "../data/presets";
 import { roleList } from "../data/roles";
 import { segments } from "../data/segments";
 
@@ -28,10 +28,17 @@ export function ContentRoute({ debug }) {
 
       <div className="space-y-4">
         <p className="text-xl font-semibold text-mist">Politische Ziele</p>
-        {politicalGoals.map((goal) => (
-          <div key={goal.id} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-            <p className="text-lg font-semibold text-mist">{goal.label}</p>
-            <p className="mt-2 text-sm leading-7 text-mist/72">{goal.description}</p>
+        {politicalGoalCategories.map((category) => (
+          <div key={category.id} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+            <p className="text-lg font-semibold text-mist">{category.label}</p>
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              {category.goals.map((goal) => (
+                <div key={goal.id} className="rounded-[18px] border border-white/10 bg-black/25 p-4">
+                  <p className="text-sm font-semibold text-mist">{goal.label}</p>
+                  <p className="mt-2 text-sm leading-7 text-mist/72">{goal.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>

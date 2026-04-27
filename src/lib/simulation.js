@@ -142,7 +142,7 @@ export function getPolicyCheck(outputs) {
   return { items, positives, verdict };
 }
 
-export function getGoalFit(goalId, outputs) {
+export function getGoalFit(goalId, outputs, sliders) {
   const goals = {
     exploitation: {
       label: "Ausbeutung senken",
@@ -154,7 +154,9 @@ export function getGoalFit(goalId, outputs) {
           (100 - outputs.exploitationRisk) * 0.2
       ),
       text:
-        "Dieses Ziel profitiert vor allem von Sichtbarkeit, Zugang, Schutzinfrastruktur und gezielter Bekämpfbarkeit von Zwang."
+        "Dieses Ziel profitiert vor allem von Sichtbarkeit, Zugang, Schutzinfrastruktur und gezielter Bekämpfbarkeit von Zwang.",
+      resultLens:
+        "Aus Sicht dieses Ziels zählt vor allem, ob Ausbeutung erkennbarer wird, Betroffene erreichbar bleiben und Täterstrukturen gezielter angreifbar werden."
     },
     safety: {
       label: "Sicherheit erhöhen",
@@ -166,7 +168,9 @@ export function getGoalFit(goalId, outputs) {
           outputs.access * 0.14
       ),
       text:
-        "Dieses Ziel profitiert von sicheren Arbeitsorten, funktionierender Infrastruktur, Standards und verlässlichem Zugang."
+        "Dieses Ziel profitiert von sicheren Arbeitsorten, funktionierender Infrastruktur, Standards und verlässlichem Zugang.",
+      resultLens:
+        "Aus Sicht dieses Ziels ist entscheidend, ob Regeln praktisch schützen, sichere Arbeitsorte erhalten und Krisenzugänge verlässlich funktionieren."
     },
     underground: {
       label: "Untergrund vermeiden",
@@ -178,7 +182,99 @@ export function getGoalFit(goalId, outputs) {
           (100 - outputs.displacement) * 0.24
       ),
       text:
-        "Dieses Ziel profitiert von Anonymität, Vertrauen und sichtbaren Strukturen, die Bedarf nicht in Graubereiche verdrängen."
+        "Dieses Ziel profitiert von Anonymität, Vertrauen und sichtbaren Strukturen, die Bedarf nicht in Graubereiche verdrängen.",
+      resultLens:
+        "Aus Sicht dieses Ziels ist die Kernfrage, ob Bedarf in bearbeitbaren Strukturen bleibt oder in heimlichere und riskantere Räume ausweicht."
+    },
+    control: {
+      label: "Kontrolle erhöhen",
+      score: Math.round(
+        sliders.regulation * 0.24 +
+          sliders.enforcement * 0.22 +
+          outputs.visibility * 0.18 +
+          outputs.infrastructure * 0.14 +
+          outputs.coercionControl * 0.12 +
+          sliders.prohibition * 0.1
+      ),
+      text:
+        "Dieses Ziel priorisiert staatliche Steuerbarkeit, administrative Erfassbarkeit und die praktische Durchsetzung von Regeln.",
+      resultLens:
+        "Aus Sicht dieses Ziels zählt vor allem, ob der Staat eingreifen, kontrollieren und Standards tatsächlich durchsetzen kann."
+    },
+    regulation: {
+      label: "Regulierung durchsetzen",
+      score: Math.round(
+        sliders.regulation * 0.32 +
+          outputs.visibility * 0.18 +
+          outputs.infrastructure * 0.16 +
+          outputs.safety * 0.14 +
+          outputs.coercionControl * 0.1 +
+          sliders.enforcement * 0.1
+      ),
+      text:
+        "Dieses Ziel priorisiert klare Standards, Nachweispflichten und administrative Bearbeitbarkeit im Alltag.",
+      resultLens:
+        "Aus Sicht dieses Ziels ist wichtig, ob Regeln nicht nur formuliert, sondern im Feld sichtbar, überprüfbar und praktisch wirksam werden."
+    },
+    demand: {
+      label: "Nachfrage reduzieren",
+      score: Math.round(
+        sliders.prohibition * 0.34 +
+          sliders.enforcement * 0.18 +
+          sliders.stigma * 0.14 +
+          (100 - outputs.visibility) * 0.16 +
+          (100 - outputs.selfDetermination) * 0.08 +
+          (100 - outputs.displacement) * 0.1
+      ),
+      text:
+        "Dieses Ziel priorisiert Reduktion von Nachfrage, auch wenn dafür stärker mit Sanktionen und Abschreckung gearbeitet wird.",
+      resultLens:
+        "Aus Sicht dieses Ziels steht im Vordergrund, ob Nachfrage politisch eingedämmt wirkt, selbst wenn das andere Zielkonflikte verschärfen kann."
+    },
+    deterrence: {
+      label: "Abschreckung erhöhen",
+      score: Math.round(
+        sliders.prohibition * 0.38 +
+          sliders.stigma * 0.18 +
+          sliders.enforcement * 0.22 +
+          (100 - outputs.visibility) * 0.12 +
+          (100 - outputs.access) * 0.1
+      ),
+      text:
+        "Dieses Ziel priorisiert harte Signale, Sanktionen und das Verhindern von Verhalten durch Abschreckung.",
+      resultLens:
+        "Aus Sicht dieses Ziels wird vor allem gefragt, ob Maßnahmen hart genug wirken, um Verhalten zu unterbinden oder unattraktiv zu machen."
+    },
+    harassment: {
+      label: "Belästigung reduzieren",
+      score: Math.round(
+        outputs.infrastructure * 0.2 +
+          outputs.visibility * 0.16 +
+          outputs.safety * 0.14 +
+          outputs.coercionControl * 0.1 +
+          (100 - outputs.displacement) * 0.22 +
+          sliders.regulation * 0.1 +
+          sliders.enforcement * 0.08
+      ),
+      text:
+        "Dieses Ziel priorisiert die Begrenzung von Belästigung und Eskalation im öffentlichen Raum, ohne Ausweichbewegungen auszublenden.",
+      resultLens:
+        "Aus Sicht dieses Ziels zählt, ob Nachfrage in kontrollierbare Rahmen gebündelt bleibt und ungefilterte Ausweichbewegungen im öffentlichen Raum eher abnehmen."
+    },
+    "public-order": {
+      label: "Öffentliche Ordnung sichern",
+      score: Math.round(
+        sliders.regulation * 0.2 +
+          sliders.prohibition * 0.18 +
+          sliders.enforcement * 0.16 +
+          (100 - outputs.visibility) * 0.18 +
+          outputs.infrastructure * 0.12 +
+          (100 - outputs.displacement) * 0.16
+      ),
+      text:
+        "Dieses Ziel priorisiert geringe Sichtbarkeit im Alltag und eine stärkere Ordnung im öffentlichen Raum.",
+      resultLens:
+        "Aus Sicht dieses Ziels steht im Vordergrund, ob sichtbare Sexarbeit im Alltag zurückgeht und der öffentliche Raum geordneter wirkt."
     }
   };
 
@@ -428,7 +524,7 @@ export function calculateScenario({ role, segment, sliders, policyGoal = "exploi
 
   const compass = getCompass(outputs);
   const policyCheck = getPolicyCheck(outputs);
-  const goalFit = getGoalFit(policyGoal, outputs);
+  const goalFit = getGoalFit(policyGoal, outputs, sliders);
 
   const chain = [
     {

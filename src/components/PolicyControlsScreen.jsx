@@ -46,6 +46,7 @@ export function PolicyControlsScreen({
   sliders,
   policyGoal,
   policyGoals,
+  policyGoalCategories,
   onPolicyGoalChange,
   preset,
   presets,
@@ -61,6 +62,7 @@ export function PolicyControlsScreen({
 }) {
   const [showComparison, setShowComparison] = useState(false);
   const activePreset = presets.find((entry) => entry.id === preset);
+  const activeGoal = policyGoals.find((goal) => goal.id === policyGoal);
 
   return (
     <section className="space-y-6">
@@ -89,23 +91,41 @@ export function PolicyControlsScreen({
             Das Cockpit bewertet nicht nur abstrakt, sondern auch danach, welches politische
             Ziel du priorisierst.
           </p>
-          <div className="mt-4 grid gap-3 xl:grid-cols-3">
-            {policyGoals.map((goal) => (
-              <button
-                key={goal.id}
-                type="button"
-                onClick={() => onPolicyGoalChange(goal.id)}
-                className={`rounded-[18px] border p-4 text-left transition ${
-                  policyGoal === goal.id
-                    ? "border-gold bg-gold/10"
-                    : "border-white/10 bg-black/25 hover:border-white/20"
-                }`}
-              >
-                <p className="font-semibold text-mist">{goal.label}</p>
-                <p className="mt-2 text-sm leading-6 text-mist/66">{goal.description}</p>
-              </button>
+          <div className="mt-5 space-y-5">
+            {policyGoalCategories.map((category) => (
+              <div key={category.id} className="space-y-3">
+                <p className="text-sm font-semibold text-mist">{category.label}</p>
+                <div className="grid gap-3 xl:grid-cols-3">
+                  {category.goals.map((goal) => (
+                    <button
+                      key={goal.id}
+                      type="button"
+                      onClick={() => onPolicyGoalChange(goal.id)}
+                      className={`rounded-[18px] border p-4 text-left transition ${
+                        policyGoal === goal.id
+                          ? "border-gold bg-gold/10"
+                          : "border-white/10 bg-black/25 hover:border-white/20"
+                      }`}
+                    >
+                      <p className="font-semibold text-mist">{goal.label}</p>
+                      <p className="mt-2 text-sm leading-6 text-mist/66">{goal.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
+          {activeGoal ? (
+            <div className="mt-5 rounded-[18px] border border-white/10 bg-black/25 p-4">
+              <p className="text-sm font-semibold text-mist">
+                Aktives Ziel: {activeGoal.label}
+              </p>
+              <p className="mt-2 text-sm leading-7 text-mist/72">
+                Unterschiedliche politische Ziele führen zu unterschiedlichen Entscheidungen –
+                und diese haben unterschiedliche systemische Folgen.
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">

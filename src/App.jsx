@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   defaultSliders
 } from "./data/config";
-import { ideologyPresets, politicalGoals } from "./data/presets";
+import { ideologyPresets, politicalGoalCategories, politicalGoals } from "./data/presets";
 import { roleList, segmentOptionalRoles } from "./data/roles";
 import { segments, segmentMap } from "./data/segments";
 import {
@@ -305,6 +305,7 @@ function App() {
                 sliders={sliders}
                 policyGoal={policyGoal}
                 policyGoals={politicalGoals}
+                policyGoalCategories={politicalGoalCategories}
                 onPolicyGoalChange={setPolicyGoal}
                 preset={preset}
                 presets={ideologyPresets}
