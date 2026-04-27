@@ -4,38 +4,42 @@ import { DebugPanel } from "./DebugPanel";
 
 function Slider({ config, value, onChange }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="font-semibold text-mist">{config.label}</p>
-        <span className="text-sm font-semibold text-gold">{value}</span>
+    <div className="slider-wrap">
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <p className="font-semibold text-mist text-sm">{config.label}</p>
+        <span
+          className="text-sm font-bold tabular-nums"
+          style={{ color: "var(--gold)", minWidth: "2.5rem", textAlign: "right" }}
+        >
+          {value}
+        </span>
       </div>
-      <p className="mb-4 text-sm leading-6 text-mist/60">{config.description}</p>
+      <p className="body-xs mb-2">{config.description}</p>
       <input
         type="range"
         min="0"
         max="100"
         value={value}
-        onChange={(event) => onChange(config.key, Number(event.target.value))}
-        className="range-accent h-2 w-full cursor-pointer rounded-full bg-white/10"
+        aria-label={config.label}
+        onChange={(e) => onChange(config.key, Number(e.target.value))}
       />
     </div>
   );
 }
 
 function CompareMetric({ label, value, tone }) {
-  const toneClass =
-    tone === "good"
-      ? "text-emerald-300"
-      : tone === "danger"
-        ? "text-rust"
-        : tone === "accent"
-          ? "text-teal"
-          : "text-gold";
-
+  const colors = {
+    good:   "var(--sage)",
+    danger: "var(--rust)",
+    accent: "var(--teal)",
+    warn:   "var(--gold)",
+  };
   return (
-    <div className="rounded-[18px] border border-white/10 bg-black/25 p-3">
-      <p className="text-[11px] uppercase tracking-[0.16em] text-gold">{label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${toneClass}`}>{value}</p>
+    <div className="card-elevated">
+      <p className="kicker mb-2">{label}</p>
+      <p className="font-bold text-2xl" style={{ color: colors[tone] ?? colors.warn }}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -58,338 +62,251 @@ export function PolicyControlsScreen({
   preview,
   comparisonModels,
   segmentComparisons,
-  debug
+  debug,
 }) {
   const [showComparison, setShowComparison] = useState(false);
-  const activePreset = presets.find((entry) => entry.id === preset);
-  const activeGoal = policyGoals.find((goal) => goal.id === policyGoal);
+  const [showSegmentCompare, setShowSegmentCompare] = useState(false);
+  const activePreset = presets.find((e) => e.id === preset);
+  const activeGoal = policyGoals.find((g) => g.id === policyGoal);
+  const showGlobal = !segment && ["politics", "journalism", "society"].includes(role.id);
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-5 rounded-[34px] border border-white/10 bg-black/20 p-4 sm:p-6">
-        <div className="rounded-[24px] border border-gold/20 bg-gold/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Politischer Kontext
-          </p>
-          <p className="mt-3 text-2xl font-semibold text-mist">
-            {role.icon} {role.label}
-          </p>
-          <p className="mt-2 text-sm leading-7 text-mist/72">
-            {segment ? `Segment: ${segment.label}` : "Ohne Segment: Fokus auf das Gesamtsystem."}
-          </p>
-          <p className="mt-3 text-sm leading-7 text-mist/72">{role.question}</p>
-          {segment ? (
-            <p className="mt-3 text-sm leading-7 text-mist/72">{segment.summary}</p>
-          ) : null}
-        </div>
+    <section className="py-8 space-y-6 mx-auto w-full max-w-4xl">
 
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Politisches Ziel wählen
-          </p>
-          <p className="mt-3 text-sm leading-7 text-mist/72">
-            Das Cockpit bewertet nicht nur abstrakt, sondern auch danach, welches politische
-            Ziel du priorisierst.
-          </p>
-          <div className="mt-5 space-y-5">
-            {policyGoalCategories.map((category) => (
-              <div key={category.id} className="space-y-3">
-                <p className="text-sm font-semibold text-mist">{category.label}</p>
-                <div className="grid gap-3 xl:grid-cols-3">
-                  {category.goals.map((goal) => (
-                    <button
-                      key={goal.id}
-                      type="button"
-                      onClick={() => onPolicyGoalChange(goal.id)}
-                      className={`rounded-[18px] border p-4 text-left transition ${
-                        policyGoal === goal.id
-                          ? "border-gold bg-gold/10"
-                          : "border-white/10 bg-black/25 hover:border-white/20"
-                      }`}
-                    >
-                      <p className="font-semibold text-mist">{goal.label}</p>
-                      <p className="mt-2 text-sm leading-6 text-mist/66">{goal.description}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          {activeGoal ? (
-            <div className="mt-5 rounded-[18px] border border-white/10 bg-black/25 p-4">
-              <p className="text-sm font-semibold text-mist">
-                Aktives Ziel: {activeGoal.label}
-              </p>
-              <p className="mt-2 text-sm leading-7 text-mist/72">
-                Unterschiedliche politische Ziele führen zu unterschiedlichen Entscheidungen –
-                und diese haben unterschiedliche systemische Folgen.
-              </p>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-                Politisches Modell wählen
-              </p>
-              <p className="mt-3 text-sm leading-7 text-mist/72">
-                Presets setzen die Slider automatisch, ersetzen sie aber nicht. Danach kannst du
-                jede Stellschraube weiter anpassen.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowComparison((current) => !current)}
-              className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-mist"
-            >
-              {showComparison ? "Vergleich ausblenden" : "Modelle vergleichen"}
-            </button>
-          </div>
-
-          <div className="mt-4 grid gap-3 xl:grid-cols-2">
-            {presets.map((entry) => (
-              <button
-                key={entry.id}
-                type="button"
-                onClick={() => onPresetChange(entry.id)}
-                className={`rounded-[18px] border p-4 text-left transition ${
-                  preset === entry.id
-                    ? "border-gold bg-gold/10"
-                    : "border-white/10 bg-black/25 hover:border-white/20"
-                }`}
-              >
-                <p className="font-semibold text-mist">{entry.label}</p>
-                <p className="mt-2 text-sm leading-6 text-mist/66">{entry.description}</p>
-              </button>
-            ))}
-          </div>
-
-          {preset === "custom" && presetSource ? (
-            <p className="mt-4 text-sm leading-7 text-gold">
-              Eigene Variante auf Basis von {presetSource}
+      {/* Context card */}
+      <div className="card-gold">
+        <p className="kicker mb-3">Schritt 4 — Politischer Kontext</p>
+        <div className="flex flex-wrap items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-mist text-xl">
+              {role.icon} {role.label}
             </p>
-          ) : null}
-
-          {activePreset?.id === "sag" ? (
-            <div className="mt-4 rounded-[18px] border border-emerald-300/20 bg-emerald-300/10 p-4">
-              <p className="text-sm font-semibold text-mist">{activePreset.explanation}</p>
-              <p className="mt-2 text-sm leading-7 text-mist/72">{activePreset.neutralFrame}</p>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Politische Stellschrauben
-          </p>
-          <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            {sliderConfig.map((config) => (
-              <Slider
-                key={config.key}
-                config={config}
-                value={sliders[config.key]}
-                onChange={onSliderChange}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-            Sofortige Vorschau
-          </p>
-          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <CompareMetric
-              label="Infrastrukturwirkung"
-              value={preview.outputs.infrastructure}
-              tone="good"
-            />
-            <CompareMetric
-              label="Verlagerungsrisiko"
-              value={preview.outputs.displacement}
-              tone="warn"
-            />
-            <CompareMetric
-              label="Bekämpfbarkeit von Zwang"
-              value={preview.outputs.coercionControl}
-              tone="accent"
-            />
-            <CompareMetric
-              label="Gesellschaftlicher Schaden"
-              value={preview.outputs.damage}
-              tone="danger"
-            />
-          </div>
-          <p className="mt-4 text-sm leading-7 text-mist/72">
-            Gute Politik reduziert Probleme, ohne neue zu erzeugen. Drehe an den
-            Rahmenbedingungen und prüfe im nächsten Schritt, was mit Sichtbarkeit, Zugang,
-            Zwangsbekämpfung und gesellschaftlichem Schaden passiert.
-          </p>
-          <div className="mt-5 rounded-[18px] border border-white/10 bg-black/25 p-4">
-            <p className="text-sm font-semibold text-mist">
-              Ziel-Fit: {preview.goalFit.label} ({preview.goalFit.score})
+            <p className="body-sm mt-1">
+              {segment ? `Segment: ${segment.label}` : "Ohne Segment – Gesamtsystem"}
             </p>
-            <p className="mt-2 text-sm leading-7 text-mist/72">{preview.goalFit.text}</p>
+            <p className="body-sm mt-1">{role.question}</p>
+            {segment && <p className="body-xs mt-1">{segment.summary}</p>}
           </div>
         </div>
+      </div>
 
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Policy-Check
-          </p>
-          <p className="mt-3 text-sm leading-7 text-mist/72">
-            Nur wenn mehrere dieser Prüfsteine gleichzeitig positiv sind, bewertet das
-            Cockpit ein Modell als wirksame Schutzpolitik.
-          </p>
-          <div className="mt-4 space-y-3">
-            {preview.policyCheck.items.map((item) => (
-              <div
-                key={item.id}
-                className={`rounded-[18px] border p-4 ${
-                  item.positive
-                    ? "border-emerald-300/20 bg-emerald-300/10"
-                    : "border-rust/20 bg-rust/10"
-                }`}
-              >
-                <p className="text-sm font-semibold text-mist">{item.question}</p>
-                <p className="mt-2 text-sm text-mist/72">{item.positive ? "Ja" : "Nein"}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-sm font-semibold text-mist">
-            Ergebnis: {preview.policyCheck.verdict}
+      {/* ── Politisches Ziel ────────────────────────────── */}
+      <div className="card space-y-4">
+        <div>
+          <p className="kicker mb-2">Politisches Ziel wählen</p>
+          <p className="body-sm">
+            Das Cockpit bewertet danach, welches politische Ziel du priorisierst.
           </p>
         </div>
 
-        {!segment && ["politics", "journalism", "society"].includes(role.id) ? (
-          <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-              Wirkung über alle Segmente
+        {policyGoalCategories.map((cat) => (
+          <div key={cat.id}>
+            <p className="text-xs font-bold text-mist/50 uppercase tracking-wider mb-2">
+              {cat.label}
             </p>
-            <p className="mt-3 text-sm leading-7 text-mist/72">
-              Du bist hier nicht auf ein einzelnes Feld festgelegt. Diese Übersicht zeigt, wie
-              dieselbe politische Kombination auf Escort, Laufhaus, BDSM, Events, Nähe,
-              Online-Arbeit und andere Segmente unterschiedlich wirkt.
-            </p>
-            <div className="mt-4 space-y-4">
-              {segmentComparisons.map((entry) => (
-                <div key={entry.id} className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                  <p className="text-lg font-semibold text-mist">{entry.label}</p>
-                  <p className="mt-2 text-sm leading-7 text-mist/66">{entry.summary}</p>
-                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    <CompareMetric
-                      label="Infrastrukturwirkung"
-                      value={entry.scenario.outputs.infrastructure}
-                      tone="good"
-                    />
-                    <CompareMetric
-                      label="Verlagerungsrisiko"
-                      value={entry.scenario.outputs.displacement}
-                      tone="warn"
-                    />
-                    <CompareMetric
-                      label="Bekämpfbarkeit von Zwang"
-                      value={entry.scenario.outputs.coercionControl}
-                      tone="accent"
-                    />
-                    <CompareMetric
-                      label="Gesellschaftlicher Schaden"
-                      value={entry.scenario.outputs.damage}
-                      tone="danger"
-                    />
-                  </div>
-                </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {cat.goals.map((goal) => (
+                <button
+                  key={goal.id}
+                  type="button"
+                  onClick={() => onPolicyGoalChange(goal.id)}
+                  className={`goal-btn ${policyGoal === goal.id ? "selected" : ""}`}
+                >
+                  <p className="font-semibold text-mist text-sm">{goal.label}</p>
+                  <p className="body-xs mt-1">{goal.description}</p>
+                </button>
               ))}
             </div>
           </div>
-        ) : null}
+        ))}
+
+        {activeGoal && (
+          <div className="card-elevated">
+            <p className="text-sm font-bold text-mist">Aktives Ziel: {activeGoal.label}</p>
+            <p className="body-xs mt-1">
+              Unterschiedliche Ziele führen zu unterschiedlichen Bewertungen systemischer Folgen.
+            </p>
+          </div>
+        )}
       </div>
 
-      {showComparison ? (
-        <div className="space-y-5 rounded-[34px] border border-white/10 bg-black/20 p-4 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Modelle vergleichen
-          </p>
+      {/* ── Politisches Modell ──────────────────────────── */}
+      <div className="card space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="kicker-teal mb-2">Politisches Modell</p>
+            <p className="body-sm">
+              Presets setzen die Slider automatisch — du kannst danach jede Stellschraube
+              weiter anpassen.
+            </p>
+          </div>
+          {comparisonModels?.length > 0 && (
+            <button
+              type="button"
+              className="btn-ghost text-xs whitespace-nowrap"
+              onClick={() => setShowComparison((v) => !v)}
+            >
+              {showComparison ? "Schließen" : "Vergleichen"}
+            </button>
+          )}
+        </div>
 
-          <div className="space-y-4">
-            {comparisonModels.map((model) => (
-              <div key={model.id} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                <p className="text-xl font-semibold text-mist">{model.label}</p>
-                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                  <CompareMetric
-                    label="Infrastrukturwirkung"
-                    value={model.scenario.outputs.infrastructure}
-                    tone="good"
-                  />
-                  <CompareMetric
-                    label="Verlagerungsrisiko"
-                    value={model.scenario.outputs.displacement}
-                    tone="warn"
-                  />
-                  <CompareMetric
-                    label="Bekämpfbarkeit von Zwang"
-                    value={model.scenario.outputs.coercionControl}
-                    tone="accent"
-                  />
-                  <CompareMetric
-                    label="Schutz selbstbestimmter Arbeit"
-                    value={model.scenario.outputs.selfDetermination}
-                    tone="default"
-                  />
-                  <CompareMetric
-                    label="Gesellschaftlicher Schaden"
-                    value={model.scenario.outputs.damage}
-                    tone="danger"
-                  />
+        {/* Preset chips */}
+        <div className="flex flex-wrap gap-2">
+          {presets.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              onClick={() => onPresetChange(entry.id)}
+              className={`preset-btn ${preset === entry.id ? "selected" : ""}`}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </div>
+
+        {preset === "custom" && presetSource && (
+          <p className="body-xs" style={{ color: "var(--gold)" }}>
+            Eigene Variante auf Basis von {presetSource}
+          </p>
+        )}
+
+        {activePreset?.id === "sag" && (
+          <div className="card-teal">
+            <p className="text-sm font-bold text-mist">{activePreset.explanation}</p>
+            <p className="body-xs mt-1">{activePreset.neutralFrame}</p>
+          </div>
+        )}
+
+        {/* Comparison table */}
+        {showComparison && comparisonModels?.length > 0 && (
+          <div className="space-y-3 pt-2 border-t border-white/6">
+            <p className="body-xs font-bold text-mist/60 uppercase tracking-wider">
+              Modellvergleich
+            </p>
+            {comparisonModels.map((m) => (
+              <div key={m.id} className="card-elevated">
+                <p className="font-bold text-mist text-sm">{m.label}</p>
+                <div className="grid grid-cols-2 gap-2 mt-2 sm:grid-cols-4">
+                  <CompareMetric label="Infrastruktur" value={m.scenario.outputs.infrastructure} tone="good" />
+                  <CompareMetric label="Verlagerung" value={m.scenario.outputs.displacement} tone="warn" />
+                  <CompareMetric label="Zwangsbek." value={m.scenario.outputs.coercionControl} tone="accent" />
+                  <CompareMetric label="Schaden" value={m.scenario.outputs.damage} tone="danger" />
                 </div>
-                <p className="mt-4 text-sm leading-7 text-mist/72">{model.evaluation}</p>
+              </div>
+            ))}
+            <p className="body-xs italic">{comparisonClosing}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Stellschrauben ──────────────────────────────── */}
+      <div className="card space-y-4">
+        <p className="kicker">Politische Stellschrauben</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {sliderConfig.map((cfg) => (
+            <Slider key={cfg.key} config={cfg} value={sliders[cfg.key]} onChange={onSliderChange} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Live-Vorschau ───────────────────────────────── */}
+      <div className="card space-y-4">
+        <p className="kicker-teal">Live-Vorschau</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <CompareMetric label="Infrastrukturwirkung" value={preview.outputs.infrastructure} tone="good" />
+          <CompareMetric label="Verlagerungsrisiko"   value={preview.outputs.displacement}   tone="warn" />
+          <CompareMetric label="Zwangsbekämpfung"     value={preview.outputs.coercionControl} tone="accent" />
+          <CompareMetric label="Ges. Schaden"         value={preview.outputs.damage}          tone="danger" />
+        </div>
+
+        <div className="card-elevated">
+          <p className="text-sm font-bold text-mist">
+            Ziel-Fit: {preview.goalFit.label}{" "}
+            <span style={{ color: "var(--gold)" }}>({preview.goalFit.score})</span>
+          </p>
+          <p className="body-xs mt-1">{preview.goalFit.text}</p>
+        </div>
+
+        {/* Policy Check */}
+        <div>
+          <p className="text-xs font-bold text-mist/50 uppercase tracking-wider mb-2">Policy-Check</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {preview.policyCheck.items.map((item) => (
+              <div
+                key={item.id}
+                className={item.positive ? "card-sage" : "card-rust"}
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-base mt-0.5">{item.positive ? "✓" : "✗"}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-mist">{item.question}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-              SAG-Kontext
-            </p>
-            <p className="mt-3 text-sm leading-7 text-mist/72">{sagSourceBox}</p>
-            <p className="mt-4 text-sm leading-7 text-mist/84">{comparisonClosing}</p>
-          </div>
+          <p className="body-sm mt-3 font-semibold text-mist">{preview.policyCheck.verdict}</p>
         </div>
-      ) : null}
+      </div>
 
-      {debug ? (
-        <DebugPanel
-          title="Review / Debug"
-          items={[
-            { label: "Aktive Rolle", value: role.id },
-            { label: "Aktives Segment", value: segment?.id ?? "none" },
-            { label: "Aktives Preset", value: preset },
-            { label: "Aktives Ziel", value: policyGoal },
-            { label: "Sliderwerte", value: sliders },
-            { label: "Berechnete Scores", value: preview.outputs },
-            { label: "Wirkungslogik", value: preview.chain },
-            { label: "Policy-Check", value: preview.policyCheck },
-            { label: "Generiertes Fazit", value: preview.recommendation }
-          ]}
-        />
-      ) : null}
+      {/* ── Segment-Vergleich (nur für system-weite Rollen) */}
+      {showGlobal && (
+        <div className="card space-y-4">
+          <button
+            type="button"
+            className="disclosure-btn"
+            onClick={() => setShowSegmentCompare((v) => !v)}
+          >
+            <div>
+              <p className="kicker mb-1">Segmentübergreifende Wirkung</p>
+              <p className="body-sm">
+                Wie wirkt diese Kombination auf verschiedene Felder?
+              </p>
+            </div>
+            <svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+              className={`text-mist/40 transition-transform duration-200 ${showSegmentCompare ? "rotate-180" : ""}`}
+            >
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
 
-      <div className="flex justify-center gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-mist"
-        >
-          Zurück
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="rounded-full bg-mist px-6 py-3 text-sm font-semibold text-ink"
-        >
-          Wirkung sehen
+          {showSegmentCompare && (
+            <div className="space-y-3 pt-2">
+              {segmentComparisons.map((entry) => (
+                <div key={entry.id} className="card-elevated space-y-2">
+                  <p className="font-bold text-mist text-sm">{entry.label}</p>
+                  <p className="body-xs">{entry.summary}</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <CompareMetric label="Infrastruktur" value={entry.scenario.outputs.infrastructure} tone="good" />
+                    <CompareMetric label="Verlagerung"   value={entry.scenario.outputs.displacement}   tone="warn" />
+                    <CompareMetric label="Zwangsbek."    value={entry.scenario.outputs.coercionControl} tone="accent" />
+                    <CompareMetric label="Schaden"       value={entry.scenario.outputs.damage}          tone="danger" />
+                  </div>
+                  {entry.segmentGoalFit && (
+                    <p className="body-xs font-medium" style={{ color: "var(--gold)" }}>
+                      Ziel-Fit: {entry.segmentGoalFit.label} ({entry.segmentGoalFit.score})
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {debug && <DebugPanel sliders={sliders} preview={preview} />}
+
+      {/* Actions */}
+      <div className="btn-row justify-center">
+        <button type="button" onClick={onBack} className="btn-ghost">← Zurück</button>
+        <button type="button" onClick={onNext} className="btn-primary">
+          Simulation berechnen
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
         </button>
       </div>
     </section>

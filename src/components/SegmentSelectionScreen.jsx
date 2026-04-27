@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export function SegmentSelectionScreen({
   segments,
   selectedSegment,
@@ -5,123 +7,110 @@ export function SegmentSelectionScreen({
   onBack,
   onNext,
   roleLabel,
-  canSkip
+  canSkip,
 }) {
-  const activeSegment = segments.find((segment) => segment.id === selectedSegment);
-  const showSystemHint = canSkip;
+  const activeSegment = segments.find((s) => s.id === selectedSegment);
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <section className="flex min-h-[78vh] flex-col justify-center">
-      <div className="mx-auto w-full max-w-5xl space-y-8">
-        <div className="space-y-4 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.26em] text-gold">
-            Step 3
+    <section className="flex min-h-[80vh] flex-col justify-center py-8">
+      <div className="mx-auto w-full max-w-4xl space-y-8">
+
+        {/* Header */}
+        <div className="space-y-3 text-center">
+          <p className="kicker">Schritt 3 von 6</p>
+          <h2 className="display-lg">Welcher Kontext?</h2>
+          <p className="body-lead mx-auto text-center">
+            <span className="text-mist font-semibold">{roleLabel}</span> — In welchem
+            realen Feld wirken Bedürfnisse, Schutz und Risiken?
           </p>
-          <h2 className="font-display text-4xl text-mist sm:text-5xl">Welcher Kontext?</h2>
-          <p className="text-sm leading-7 text-mist/68">
-            Rolle: {roleLabel}. Segment bedeutet hier: In welchem realen Feld wirken
-            Bedürfnisse, Schutz, Risiken und professionelle Anforderungen?
-          </p>
-          {showSystemHint ? (
-            <p className="mx-auto max-w-3xl text-sm leading-7 text-mist/74">
-              Für {roleLabel} ist ein Segment kein Muss. Du kannst auf das Gesamtsystem
-              schauen oder prüfen, wie dieselbe politische Entscheidung in unterschiedlichen
-              Feldern wie Escort, Laufhaus, BDSM oder Online wirkt.
+          {canSkip && (
+            <p className="body-xs mx-auto max-w-lg">
+              Für {roleLabel} ist ein Segment kein Muss. Du kannst auf das
+              Gesamtsystem schauen oder spezifische Felder vergleichen.
             </p>
-          ) : null}
+          )}
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {canSkip ? (
+        {/* Segment grid */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {canSkip && (
             <button
               type="button"
               onClick={() => onSelectSegment(null)}
-              className={`rounded-[28px] border p-5 text-left transition ${
-                selectedSegment === null
-                  ? "border-gold bg-gold/10"
-                  : "border-white/10 bg-white/5 hover:border-white/20"
-              }`}
+              className={`select-card ${selectedSegment === null ? "selected" : ""}`}
             >
-              <p className="text-xl font-semibold text-mist">Ohne Segment / Gesamtsystem</p>
-              <p className="mt-3 text-sm leading-7 text-mist/70">
-                Nutze diese Option, wenn du zuerst auf die allgemeine Systemlogik schauen
-                willst und noch keinen konkreten Kontext fokussierst.
+              <p className="font-bold text-mist text-base">Gesamtsystem</p>
+              <p className="body-xs mt-1.5">
+                Übergreifende Systemlogik ohne spezifischen Kontext.
               </p>
             </button>
-          ) : null}
-
-          {segments.map((segment) => (
+          )}
+          {segments.map((seg) => (
             <button
-              key={segment.id}
+              key={seg.id}
               type="button"
-              onClick={() => onSelectSegment(segment.id)}
-              className={`rounded-[28px] border p-5 text-left transition ${
-                selectedSegment === segment.id
-                  ? "border-gold bg-gold/10"
-                  : "border-white/10 bg-white/5 hover:border-white/20"
-              }`}
+              onClick={() => onSelectSegment(seg.id)}
+              className={`select-card ${selectedSegment === seg.id ? "selected" : ""}`}
             >
-              <p className="text-xl font-semibold text-mist">{segment.label}</p>
-              <p className="mt-3 text-sm leading-7 text-mist/70">{segment.summary}</p>
+              <p className="font-bold text-mist text-base">{seg.label}</p>
+              <p className="body-xs mt-1.5">{seg.summary}</p>
             </button>
           ))}
         </div>
 
-        {activeSegment ? (
-          <div className="rounded-[30px] border border-gold/20 bg-gold/10 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-              Segmentstruktur
-            </p>
-            <div className="mt-4 space-y-4">
-              <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-semibold text-mist">1. Bedarf</p>
-                <p className="mt-2 text-sm leading-7 text-mist/72">{activeSegment.need}</p>
+        {/* Segment detail — collapsible */}
+        {activeSegment && (
+          <div className="card-gold space-y-3">
+            <button
+              type="button"
+              className="disclosure-btn"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+            >
+              <div>
+                <p className="kicker mb-1">Segmentstruktur</p>
+                <p className="font-bold text-mist">{activeSegment.label}</p>
               </div>
-              <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-semibold text-mist">2. Wirkung für die Person</p>
-                <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.personEffect.join(", ")}.
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-semibold text-mist">3. Gesellschaftliche Funktion</p>
-                <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.socialFunction.join(", ")}.
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-semibold text-mist">4. Wegfall = Verlagerung</p>
-                <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.absence.join(", ")}.
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-black/25 p-4">
-                <p className="text-sm font-semibold text-mist">5. Professionelle Skills</p>
-                <p className="mt-2 text-sm leading-7 text-mist/72">
-                  {activeSegment.skills[0].task}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : null}
+              <svg
+                width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                className={`text-mist/50 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
 
-        <div className="flex items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-mist"
-          >
-            Zurück
+            {expanded && (
+              <div className="grid gap-2 sm:grid-cols-3 mt-2">
+                {[
+                  { label: "Bedarf", content: activeSegment.need },
+                  { label: "Wirkung für die Person", content: activeSegment.personEffect?.join(", ") },
+                  { label: "Bei Wegfall", content: activeSegment.absence?.join(" · ") },
+                ].map(({ label, content }) => (
+                  <div key={label} className="card-elevated">
+                    <p className="text-xs font-bold text-mist/50 uppercase tracking-wider mb-1.5">{label}</p>
+                    <p className="body-xs text-mist/70">{content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="btn-row justify-center">
+          <button type="button" onClick={onBack} className="btn-ghost">
+            ← Zurück
           </button>
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!canSkip && !selectedSegment}
-            className="rounded-full bg-mist px-6 py-3 text-sm font-semibold text-ink disabled:opacity-40"
-          >
-            Stellschrauben einstellen
+          <button type="button" onClick={onNext} className="btn-primary">
+            Weiter
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </button>
         </div>
+
       </div>
     </section>
   );

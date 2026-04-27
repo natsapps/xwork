@@ -5,25 +5,16 @@ import { generatePoliticalCopy, getDecisionImpact } from "../lib/simulation";
 import { DebugPanel } from "./DebugPanel";
 
 export function ResultScreen({
-  role,
-  segment,
-  summary,
-  result,
-  preset,
-  presetSource,
-  policyGoal,
-  sliders,
-  debug,
-  onRestart,
-  onBack
+  role, segment, summary, result, preset, presetSource,
+  policyGoal, sliders, debug, onRestart, onBack,
 }) {
   const [copied, setCopied] = useState(false);
+
   const presetLabel =
     preset === "custom"
-      ? presetSource
-        ? `Eigene Variante auf Basis von ${presetSource}`
-        : "Eigene Einstellung"
-      : ideologyPresets.find((entry) => entry.id === preset)?.label;
+      ? presetSource ? `Eigene Variante auf Basis von ${presetSource}` : "Eigene Einstellung"
+      : ideologyPresets.find((e) => e.id === preset)?.label;
+
   const copyText = generatePoliticalCopy({ role, result, presetId: preset });
   const decisionImpact = getDecisionImpact(result);
 
@@ -38,172 +29,129 @@ export function ResultScreen({
   };
 
   return (
-    <section className="flex min-h-[78vh] items-center justify-center">
-      <div className="w-full max-w-5xl space-y-6 rounded-[38px] border border-white/10 bg-black/20 p-8 shadow-glow">
-        <p className="text-xs font-semibold uppercase tracking-[0.26em] text-gold">Step 6</p>
-        <h2 className="font-display text-4xl text-mist sm:text-5xl">Politisches Fazit</h2>
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-mist/76">
-          {keyMessage}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[24px] border border-emerald-300/20 bg-emerald-300/10 p-5">
-            <p className="text-sm text-mist/68">Infrastrukturwirkung</p>
-            <p className="mt-3 text-5xl font-semibold text-emerald-300">
-              {result.outputs.infrastructure}
-            </p>
-          </div>
-          <div className="rounded-[24px] border border-gold/20 bg-gold/10 p-5">
-            <p className="text-sm text-mist/68">Verlagerungsrisiko</p>
-            <p className="mt-3 text-5xl font-semibold text-gold">{result.outputs.displacement}</p>
-          </div>
-          <div className="rounded-[24px] border border-rust/20 bg-rust/10 p-5">
-            <p className="text-sm text-mist/68">Gesellschaftlicher Schaden</p>
-            <p className="mt-3 text-5xl font-semibold text-rust">{result.outputs.damage}</p>
-          </div>
-          <div className="rounded-[24px] border border-teal/20 bg-teal/10 p-5">
-            <p className="text-sm text-mist/68">Bekämpfbarkeit von Zwang</p>
-            <p className="mt-3 text-5xl font-semibold text-teal">{result.outputs.coercionControl}</p>
-          </div>
-        </div>
-        <div className="rounded-[30px] border border-gold/20 bg-gold/10 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">Kontext</p>
-          <p className="mt-3 text-lg text-mist">
-            {role.icon} {role.label}
-            {segment ? ` · ${segment.label}` : ""}
-            {presetLabel ? ` · ${presetLabel}` : ""}
-          </p>
-          <p className="mt-4 text-2xl leading-9 text-mist">{summary}</p>
-          <p className="mt-4 text-sm leading-7 text-mist/76">{result.roleResultFrame}</p>
-          <p className="mt-4 text-sm leading-7 text-mist/84">{result.recommendation}</p>
-          {policyGoal ? (
-            <div className="mt-4 rounded-[18px] border border-white/10 bg-black/25 p-4">
-              <p className="text-sm font-semibold text-mist">
-                Politisches Ziel: {policyGoal.label} · Ziel-Fit: {result.goalFit.score}
-              </p>
-              <p className="mt-2 text-sm leading-7 text-mist/72">{result.goalFit.resultLens}</p>
-            </div>
-          ) : null}
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-mist"
-            >
-              Politisches Fazit kopieren
-            </button>
-            <span className="self-center text-sm text-mist/60">
-              {copied ? "Kopiert." : "Kurzfassung für Politik, Medien oder Verbände."}
-            </span>
-          </div>
-        </div>
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-            Tatsächliche Wirkung dieser Entscheidung
-          </p>
-          <div className="mt-4 space-y-4">
-            <div className="rounded-[18px] border border-emerald-300/20 bg-emerald-300/10 p-4">
-              <p className="text-sm font-semibold text-mist">1. Was verbessert sich?</p>
-              <ul className="mt-2 space-y-2 text-sm leading-7 text-mist/76">
-                {decisionImpact.improves.map((item) => (
-                  <li key={item}>• {item}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-[18px] border border-rust/20 bg-rust/10 p-4">
-              <p className="text-sm font-semibold text-mist">2. Was verschlechtert sich?</p>
-              <ul className="mt-2 space-y-2 text-sm leading-7 text-mist/76">
-                {decisionImpact.worsens.map((item) => (
-                  <li key={item}>• {item}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
-              <p className="text-sm font-semibold text-mist">
-                3. Was ist die wahrscheinlichste Systemreaktion?
-              </p>
-              <p className="mt-2 text-sm leading-7 text-mist/72">{decisionImpact.systemReaction}</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Politische Einordnung
-          </p>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {[
-              "Wirksame Schutzpolitik",
-              "Risiko von Verlagerung",
-              "Symbolische Härte ohne Wirkung"
-            ].map((label) => {
-              const active = decisionImpact.classification.title === label;
+    <section className="py-8 space-y-6 mx-auto w-full max-w-3xl">
 
-              return (
-                <div
-                  key={label}
-                  className={`rounded-[18px] border p-4 ${
-                    active
-                      ? "border-gold bg-gold/10"
-                      : "border-white/10 bg-black/25"
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-mist">{label}</p>
-                  <p className="mt-2 text-sm leading-7 text-mist/72">
-                    {active ? decisionImpact.classification.text : "In diesem Szenario nicht dominant."}
-                  </p>
-                </div>
-              );
-            })}
+      {/* ── Kicker ───────────────────────────────────── */}
+      <div className="text-center space-y-3">
+        <p className="kicker">Schritt 6 — Politisches Fazit</p>
+        <h2 className="display-lg">Fazit</h2>
+      </div>
+
+      {/* ── Key message ──────────────────────────────── */}
+      <div className="card-elevated">
+        <p className="body-sm italic">{keyMessage}</p>
+      </div>
+
+      {/* ── 4 result metrics ─────────────────────────── */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "Infrastrukturwirkung", value: result.outputs.infrastructure, color: "var(--sage)" },
+          { label: "Verlagerungsrisiko",   value: result.outputs.displacement,   color: "var(--gold)" },
+          { label: "Ges. Schaden",         value: result.outputs.damage,         color: "var(--rust)" },
+          { label: "Zwangsbekämpfung",     value: result.outputs.coercionControl, color: "var(--teal)" },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="metric-card">
+            <p className="body-xs">{label}</p>
+            <p className="metric-value" style={{ color }}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Summary block ────────────────────────────── */}
+      <div className="card space-y-4">
+        <div>
+          <p className="kicker mb-3">Kontext</p>
+          <p className="font-bold text-mist text-lg">
+            {role.icon} {role.label}
+            {segment && ` · ${segment.label}`}
+            {presetLabel && ` · ${presetLabel}`}
+          </p>
+        </div>
+
+        <p className="body-lead">{summary}</p>
+
+        <div className="card-elevated">
+          <p className="body-sm">{result.roleResultFrame}</p>
+        </div>
+
+        <div className="card-elevated">
+          <p className="body-sm font-semibold text-mist">{result.recommendation}</p>
+        </div>
+
+        {policyGoal && (
+          <div className="card-gold">
+            <p className="text-sm font-bold text-mist">
+              Politisches Ziel: {policyGoal.label}
+              <span className="ml-2 font-normal" style={{ color: "var(--gold)" }}>
+                Ziel-Fit: {result.goalFit.score}
+              </span>
+            </p>
+            <p className="body-sm mt-1">{result.goalFit.resultLens}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Decision impact ───────────────────────────── */}
+      {decisionImpact?.length > 0 && (
+        <div className="card space-y-3">
+          <p className="kicker mb-2">Entscheidungswirkung</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {decisionImpact.map((item) => (
+              <div key={item.id} className={item.positive ? "card-sage" : "card-rust"}>
+                <p className="text-sm font-semibold text-mist">{item.label}</p>
+                <p className="body-xs mt-1">{item.text}</p>
+              </div>
+            ))}
           </div>
         </div>
-        {segment ? (
-          <div className="rounded-[24px] border border-white/10 bg-white/5 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-              Segment-Fazit
-            </p>
-            <p className="mt-3 text-lg leading-8 text-mist">{segment.summary}</p>
-            <p className="mt-4 text-sm leading-7 text-mist/72">
-              Wenn diese Infrastruktur fehlt, verschwindet der Bedarf nicht. Er verlagert
-              sich in weniger sichtbare und weniger kontrollierbare Räume.
-            </p>
-          </div>
-        ) : null}
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-mist/74">
-          {disclaimer}
+      )}
+
+      {/* ── Copy / share ─────────────────────────────── */}
+      <div className="card space-y-3">
+        <p className="kicker-teal mb-2">Teilen</p>
+        <p className="body-sm">Kurzfassung für Politik, Medien oder Verbände.</p>
+        <div className="card-elevated">
+          <p className="body-sm whitespace-pre-wrap text-mist/70">{copyText}</p>
         </div>
-        <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 text-base leading-8 text-mist/84">
-          {finalStatement}
-        </div>
-        {debug ? (
-          <DebugPanel
-            title="Review / Debug"
-            items={[
-              { label: "Aktive Rolle", value: role.id },
-              { label: "Aktives Segment", value: segment?.id ?? "none" },
-              { label: "Aktives Preset", value: preset },
-              { label: "Aktives Ziel", value: policyGoal?.id ?? "exploitation" },
-              { label: "Sliderwerte", value: sliders },
-              { label: "Berechnete Scores", value: result.outputs },
-              { label: "Policy-Check", value: result.policyCheck },
-              { label: "Generiertes Fazit", value: copyText }
-            ]}
-          />
-        ) : null}
-        <div className="flex justify-center gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-mist"
-          >
-            Zurück zur Simulation
-          </button>
-          <button
-            type="button"
-            onClick={onRestart}
-            className="rounded-full bg-mist px-6 py-3 text-sm font-semibold text-ink"
-          >
-            Neu starten
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="btn-ghost"
+        >
+          {copied ? "✓ Kopiert" : "Fazit kopieren"}
+        </button>
+      </div>
+
+      {/* ── Final statement ──────────────────────────── */}
+      <div className="card-elevated text-center">
+        <p className="body-sm italic text-mist/60">{finalStatement}</p>
+      </div>
+
+      {/* ── Disclaimer ───────────────────────────────── */}
+      <p className="body-xs text-center px-4">{disclaimer}</p>
+
+      {debug && (
+        <DebugPanel
+          title="Debug"
+          items={[
+            { label: "Rolle", value: role.id },
+            { label: "Preset", value: preset },
+            { label: "Sliders", value: sliders },
+            { label: "Outputs", value: result.outputs },
+          ]}
+        />
+      )}
+
+      {/* ── Actions ──────────────────────────────────── */}
+      <div className="btn-row justify-center">
+        <button type="button" onClick={onBack} className="btn-ghost">← Zurück</button>
+        <button type="button" onClick={onRestart} className="btn-primary">
+          Neue Simulation
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
       </div>
     </section>
   );

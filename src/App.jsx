@@ -231,10 +231,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-ink text-mist">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(78,183,173,0.18),transparent_26%),radial-gradient(circle_at_85%_15%,rgba(212,175,106,0.16),transparent_26%),linear-gradient(180deg,#111315_0%,#171a1d_100%)]" />
-      <div className="fixed inset-0 -z-10 bg-grid bg-[size:36px_36px] opacity-20" />
+      {/* Subtle radial glow background */}
+      <div className="fixed inset-0 -z-10" style={{background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63,173,164,0.10), transparent), radial-gradient(ellipse 60% 40% at 90% 20%, rgba(201,168,76,0.08), transparent), #111315'}} />
 
-      <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="app-shell">
         <ProgressHeader
           step={steps[screen]}
           title={routeState.route === "app" ? screenTitles[screen] : routeState.route}
